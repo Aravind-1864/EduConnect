@@ -1,0 +1,22 @@
+# Render Blueprint: one web service that runs the API and serves the React app.
+services:
+  - type: web
+    name: educonnect
+    runtime: node
+    plan: free
+    buildCommand: npm run build:prod
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: 20.18.0
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: MONGO_URI
+        sync: false   # paste your MongoDB Atlas connection string in the Render dashboard
+      - key: CLIENT_URL
+        sync: false   # your Render URL, e.g. https://educonnect.onrender.com
