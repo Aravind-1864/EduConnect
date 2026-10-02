@@ -7,6 +7,7 @@ import * as cls from '../controllers/class.controller.js';
 import * as content from '../controllers/content.controller.js';
 import * as tutors from '../controllers/tutor.controller.js';
 import * as dash from '../controllers/dashboard.controller.js';
+import * as google from '../controllers/google.controller.js';
 
 const router = Router();
 
@@ -16,6 +17,9 @@ router.post('/auth/register', authLimiter, auth.register);
 router.post('/auth/login', authLimiter, auth.login);
 router.get('/auth/me', protect, auth.me);
 router.patch('/auth/me', protect, auth.updateMe);
+
+// Google redirects here after sign-in (no bearer token on a browser redirect; the signed `state` identifies the user).
+router.get('/google/callback', google.callback);
 
 router.use(protect);
 
@@ -69,6 +73,12 @@ router.get('/bookings', tutors.listBookings);
 router.post('/bookings', allow('student'), tutors.createBooking);
 router.patch('/bookings/:id', tutors.updateBookingStatus);
 router.get('/bookings/:id/join', tutors.joinBooking);
+router.patch('/bookings/:id/meet', allow('tutor'), tutors.setBookingMeet);
+
+/* --------------------------- Google Meet ----------------------------- */
+router.get('/google/status', google.status);
+router.get('/google/auth-url', allow('tutor', 'admin'), google.authUrl);
+router.delete('/google', google.disconnectGoogle);
 
 /* -------------------------------- Admin ------------------------------- */
 router.get('/admin/stats', allow('admin'), dash.adminStats);

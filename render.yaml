@@ -20,3 +20,7 @@ services:
         sync: false   # paste your MongoDB Atlas connection string in the Render dashboard
       - key: CLIENT_URL
         sync: false   # your Render URL, e.g. https://educonnect.onrender.com
+      - key: GOOGLE_CLIENT_ID
+        sync: false   # optional: lets tutors auto-create Google Meet links (see README)
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false

@@ -14,7 +14,6 @@ const CLIENT_DIST = fileURLToPath(new URL('../../client/dist', import.meta.url))
 
 export function createApp() {
   const app = express();
-  const jitsi = `https://${env.jitsiDomain}`;
 
   app.set('trust proxy', 1); // behind Render/other proxies, so rate limiting sees real client IPs
   app.use(
@@ -24,12 +23,12 @@ export function createApp() {
       contentSecurityPolicy: {
         directives: {
           defaultSrc: ["'self'"],
-          scriptSrc: ["'self'", "'unsafe-inline'", jitsi],
+          scriptSrc: ["'self'", "'unsafe-inline'"],
           styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
           fontSrc: ["'self'", 'https://fonts.gstatic.com', 'data:'],
           imgSrc: ["'self'", 'data:', 'blob:', 'https:'],
-          connectSrc: ["'self'", 'ws:', 'wss:', jitsi],
-          frameSrc: ["'self'", jitsi],
+          connectSrc: ["'self'", 'ws:', 'wss:'],
+          frameSrc: ["'self'"],
           mediaSrc: ["'self'", 'blob:', 'https:'],
         },
       },

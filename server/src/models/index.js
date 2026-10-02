@@ -15,7 +15,8 @@ export const Session = model(
       description: { type: String, default: '' },
       startsAt: { type: Date, required: true },
       durationMinutes: { type: Number, default: 60, min: 5, max: 600 },
-      roomName: { type: String, required: true },
+      meetUrl: { type: String, trim: true },
+      meetCreatedByApi: { type: Boolean, default: false },
       status: { type: String, enum: ['scheduled', 'live', 'ended', 'cancelled'], default: 'scheduled' },
       attendees: [ref('User', false)],
       createdBy: ref('User'),
@@ -110,7 +111,7 @@ export const Booking = model(
       durationMinutes: { type: Number, default: 60 },
       note: { type: String, default: '' },
       status: { type: String, enum: ['pending', 'confirmed', 'declined', 'cancelled', 'completed'], default: 'pending' },
-      roomName: String,
+      meetUrl: { type: String, trim: true },
     },
     { timestamps: true }
   )

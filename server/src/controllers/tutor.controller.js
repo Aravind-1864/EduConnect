@@ -1,7 +1,7 @@
-import crypto from 'node:crypto';
 import mongoose from 'mongoose';
 import { User, Booking, Review } from '../models/index.js';
 import { ApiError, asyncHandler, requireFields } from '../utils/ApiError.js';
+import { resolveMeetUrl } from '../utils/googleMeet.js';
 
 const PEOPLE = 'name email avatarColor subjects';
 const escapeRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -76,14 +76,31 @@ export const createBooking = asyncHandler(async (req, res) => {
   res.status(201).json(await booking.populate([{ path: 'tutor', select: PEOPLE }, { path: 'student', select: PEOPLE }]));
 });
 
-/** Room details for a confirmed 1-on-1 booking (tutor or student only). */
+/** Google Meet details for a confirmed 1-on-1 booking (tutor or student only). */
 export const joinBooking = asyncHandler(async (req, res) => {
+  const booking = await Booking.findById(req.params.id).populate([{ path: 'tutor', select: PEOPLE }, { path: 'student', select: PEOPLE }]);
+  if (!booking) throw ApiError.notFound('Booking not found');
+  const isTutor = String(booking.tutor._id) === String(req.user._id);
+  if (!isTutor && String(booking.student._id) !== String(req.user._id)) throw ApiError.forbidden();
+  if (booking.status !== 'confirmed') throw ApiError.badRequest('Only confirmed bookings can be joined');
+  res.json({ booking, isTutor });
+});
+
+/** Tutor sets or replaces the Meet link of a confirmed booking (pasted, or auto-created). */
+export const setBookingMeet = asyncHandler(async (req, res) => {
   const booking = await Booking.findById(req.params.id);
   if (!booking) throw ApiError.notFound('Booking not found');
-  const isTutor = String(booking.tutor) === String(req.user._id);
-  if (!isTutor && String(booking.student) !== String(req.user._id)) throw ApiError.forbidden();
-  if (booking.status !== 'confirmed') throw ApiError.badRequest('Only confirmed bookings can be joined');
-  res.json({ booking, roomName: booking.roomName, isTutor, displayName: req.user.name, email: req.user.email });
+  if (String(booking.tutor) !== String(req.user._id)) throw ApiError.forbidden('Only the tutor can set the meeting link');
+  const { meetUrl } = await resolveMeetUrl(req.body, req.user._id);
+  if (!meetUrl) throw ApiError.badRequest('Paste a Google Meet link or create one automatically');
+  booking.meetUrl = meetUrl;
+  await booking.save();
+  req.app.get('io')?.to(`user:${booking.student}`).emit('notify', {
+    title: 'Meeting link ready',
+    body: `Your ${booking.subject} session now has a Google Meet link`,
+    link: '/bookings',
+  });
+  res.json(await booking.populate([{ path: 'tutor', select: PEOPLE }, { path: 'student', select: PEOPLE }]));
 });
 
 const TRANSITIONS = {
@@ -103,7 +120,11 @@ export const updateBookingStatus = asyncHandler(async (req, res) => {
   if (!allowed.includes(req.body.status)) throw ApiError.badRequest(`Cannot change a ${booking.status} booking to ${req.body.status}`);
 
   booking.status = req.body.status;
-  if (booking.status === 'confirmed') booking.roomName = `EduConnect-1on1-${crypto.randomBytes(5).toString('hex')}`;
+  if (booking.status === 'confirmed') {
+    // Accepting may include a Meet link (pasted or auto-created); it can also be added later.
+    const { meetUrl } = await resolveMeetUrl(req.body, req.user._id);
+    if (meetUrl) booking.meetUrl = meetUrl;
+  }
   await booking.save();
 
   const otherParty = isTutor ? booking.student : booking.tutor;

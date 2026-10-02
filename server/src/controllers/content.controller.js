@@ -1,12 +1,11 @@
-import crypto from 'node:crypto';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { Material, Session, Assignment, Submission } from '../models/index.js';
 import { ApiError, asyncHandler, requireFields } from '../utils/ApiError.js';
 import { publicUrl, UPLOAD_DIR } from '../middleware/upload.js';
+import { resolveMeetUrl } from '../utils/googleMeet.js';
 
 const PEOPLE = 'name email avatarColor';
-const roomName = (prefix) => `EduConnect-${prefix}-${crypto.randomBytes(5).toString('hex')}`;
 
 async function removeLocalFile(url) {
   if (!url?.startsWith('/uploads/')) return;
@@ -52,13 +51,16 @@ export const listSessions = asyncHandler(async (req, res) => {
 export const createSession = asyncHandler(async (req, res) => {
   requireFields(req.body, ['title', 'startsAt']);
   const { title, description, startsAt, durationMinutes } = req.body;
+  // The Meet link is optional when scheduling; the tutor can add it before going live.
+  const { meetUrl, byApi } = await resolveMeetUrl(req.body, req.user._id);
   const session = await Session.create({
     classroom: req.classroom._id,
     title,
     description,
     startsAt,
     durationMinutes,
-    roomName: roomName(req.classroom.subject.replace(/\W+/g, '')),
+    meetUrl: meetUrl || undefined,
+    meetCreatedByApi: byApi,
     createdBy: req.user._id,
   });
   req.app.get('io')?.to(`class:${req.classroom._id}`).emit('session:new', session);
@@ -71,6 +73,12 @@ export const updateSession = asyncHandler(async (req, res) => {
   for (const key of ['title', 'description', 'startsAt', 'durationMinutes', 'status']) {
     if (req.body[key] !== undefined) session[key] = req.body[key];
   }
+  if (req.body.meetUrl !== undefined || req.body.autoMeet) {
+    const { meetUrl, byApi } = await resolveMeetUrl(req.body, req.user._id);
+    session.meetUrl = meetUrl || undefined;
+    session.meetCreatedByApi = byApi;
+  }
+  if (session.status === 'live' && !session.meetUrl) throw ApiError.badRequest('Add a Google Meet link before going live');
   await session.save();
   req.app.get('io')?.to(`class:${req.classroom._id}`).emit('session:updated', session);
   res.json(session);
@@ -81,13 +89,16 @@ export const deleteSession = asyncHandler(async (req, res) => {
   res.status(204).end();
 });
 
-/** Returns the room details and records attendance. Students can only join live sessions. */
+/**
+ * Returns the session (with its Google Meet link) and records attendance.
+ * The tutor opening a scheduled session that has a link starts it; students can only join live sessions.
+ */
 export const joinSession = asyncHandler(async (req, res) => {
   const session = await Session.findOne({ _id: req.params.id, classroom: req.classroom._id }).populate('classroom', 'title subject');
   if (!session) throw ApiError.notFound('Session not found');
   if (['ended', 'cancelled'].includes(session.status)) throw ApiError.badRequest(`This session has ${session.status}`);
 
-  if (req.isClassTutor && session.status === 'scheduled') {
+  if (req.isClassTutor && session.status === 'scheduled' && session.meetUrl) {
     session.status = 'live';
     req.app.get('io')?.to(`class:${req.classroom._id}`).emit('session:updated', session);
   } else if (!req.isClassTutor && session.status !== 'live') {
@@ -96,7 +107,7 @@ export const joinSession = asyncHandler(async (req, res) => {
 
   if (!session.attendees.some((a) => String(a) === String(req.user._id))) session.attendees.push(req.user._id);
   await session.save();
-  res.json({ session, isTutor: req.isClassTutor, displayName: req.user.name, email: req.user.email });
+  res.json({ session, isTutor: req.isClassTutor });
 });
 
 /* ---------------------------- Assignments ---------------------------- */
