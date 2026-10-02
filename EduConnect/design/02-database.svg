@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 620" font-family="Segoe UI,Arial" font-size="13">
+<rect width="1000" height="620" fill="#f8fafc"/>
+<text x="500" y="38" text-anchor="middle" font-size="24" font-weight="bold" fill="#1e293b">Database Design (MongoDB Collections)</text>
+<defs><g id="h"></g></defs>
+<g>
+<rect x="40" y="70" width="210" height="180" rx="8" fill="#fff" stroke="#4f46e5" stroke-width="2"/><rect x="40" y="70" width="210" height="32" rx="8" fill="#4f46e5"/><text x="145" y="92" text-anchor="middle" fill="#fff" font-weight="bold">User</text>
+<text x="55" y="125">_id</text><text x="55" y="147">name, email</text><text x="55" y="169">password (hashed)</text><text x="55" y="191">role: student|tutor|admin</text><text x="55" y="213">avatar, bio, subjects[]</text><text x="55" y="235">createdAt</text>
+<rect x="390" y="70" width="210" height="180" rx="8" fill="#fff" stroke="#4f46e5" stroke-width="2"/><rect x="390" y="70" width="210" height="32" rx="8" fill="#4f46e5"/><text x="495" y="92" text-anchor="middle" fill="#fff" font-weight="bold">Class</text>
+<text x="405" y="125">_id</text><text x="405" y="147">title, subject</text><text x="405" y="169">description</text><text x="405" y="191">tutorId → User</text><text x="405" y="213">students[] → User</text><text x="405" y="235">classCode</text>
+<rect x="740" y="70" width="210" height="160" rx="8" fill="#fff" stroke="#16a34a" stroke-width="2"/><rect x="740" y="70" width="210" height="32" rx="8" fill="#16a34a"/><text x="845" y="92" text-anchor="middle" fill="#fff" font-weight="bold">Session</text>
+<text x="755" y="125">_id</text><text x="755" y="147">classId → Class</text><text x="755" y="169">title, dateTime</text><text x="755" y="191">duration</text><text x="755" y="213">meetingLink</text>
+<rect x="740" y="290" width="210" height="140" rx="8" fill="#fff" stroke="#16a34a" stroke-width="2"/><rect x="740" y="290" width="210" height="32" rx="8" fill="#16a34a"/><text x="845" y="312" text-anchor="middle" fill="#fff" font-weight="bold">Material</text>
+<text x="755" y="345">_id</text><text x="755" y="367">classId → Class</text><text x="755" y="389">title, fileUrl, type</text><text x="755" y="411">uploadedAt</text>
+<rect x="390" y="320" width="210" height="160" rx="8" fill="#fff" stroke="#d97706" stroke-width="2"/><rect x="390" y="320" width="210" height="32" rx="8" fill="#d97706"/><text x="495" y="342" text-anchor="middle" fill="#fff" font-weight="bold">Assignment</text>
+<text x="405" y="375">_id</text><text x="405" y="397">classId → Class</text><text x="405" y="419">title, description</text><text x="405" y="441">dueDate, maxMarks</text><text x="405" y="463">attachmentUrl</text>
+<rect x="40" y="320" width="210" height="180" rx="8" fill="#fff" stroke="#d97706" stroke-width="2"/><rect x="40" y="320" width="210" height="32" rx="8" fill="#d97706"/><text x="145" y="342" text-anchor="middle" fill="#fff" font-weight="bold">Submission</text>
+<text x="55" y="375">_id</text><text x="55" y="397">assignmentId → Assignment</text><text x="55" y="419">studentId → User</text><text x="55" y="441">fileUrl, submittedAt</text><text x="55" y="463">grade, feedback</text>
+<rect x="740" y="470" width="210" height="130" rx="8" fill="#fff" stroke="#db2777" stroke-width="2"/><rect x="740" y="470" width="210" height="32" rx="8" fill="#db2777"/><text x="845" y="492" text-anchor="middle" fill="#fff" font-weight="bold">Message</text>
+<text x="755" y="525">_id</text><text x="755" y="547">classId → Class</text><text x="755" y="569">senderId → User, text, time</text>
+</g>
+<g stroke="#64748b" stroke-width="2" fill="none"><path d="M250 160 H390"/><path d="M600 150 H740"/><path d="M600 200 L740 360"/><path d="M495 250 V320"/><path d="M390 400 H250"/><path d="M145 250 V320"/><path d="M600 230 L740 530"/></g>
+<text x="320" y="152" text-anchor="middle" fill="#64748b">1 : N</text><text x="670" y="142" text-anchor="middle" fill="#64748b">1 : N</text><text x="320" y="392" text-anchor="middle" fill="#64748b">1 : N</text>
+</svg>

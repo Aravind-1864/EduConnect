@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 760" font-family="Segoe UI,Arial" font-size="15">
+<rect width="1200" height="760" fill="#f1f5f9"/>
+<rect width="1200" height="64" fill="#fff"/><text x="30" y="41" font-size="22" font-weight="bold" fill="#4f46e5">EduConnect</text><text x="1160" y="41" text-anchor="end" fill="#64748b">Back to Dashboard</text>
+<rect x="30" y="84" width="1140" height="150" rx="14" fill="#6366f1"/>
+<text x="60" y="140" font-size="32" font-weight="bold" fill="#fff">Mathematics - Grade 10</text>
+<text x="60" y="175" fill="#e0e7ff">Tutor: Mr. Kumar  |  32 students  |  Class code: MATH-7X2K</text>
+<rect x="960" y="160" width="180" height="44" rx="10" fill="#fff"/><text x="1050" y="188" text-anchor="middle" fill="#4f46e5" font-weight="bold">Join Live Class</text>
+<text x="60" y="275" font-weight="bold" fill="#4f46e5">Materials</text><rect x="50" y="285" width="100" height="3" fill="#4f46e5"/>
+<text x="190" y="275" fill="#64748b">Assignments</text><text x="330" y="275" fill="#64748b">Sessions</text><text x="450" y="275" fill="#64748b">Chat</text><text x="540" y="275" fill="#64748b">People</text>
+<line x1="30" y1="290" x2="1170" y2="290" stroke="#cbd5e1"/>
+<rect x="30" y="310" width="760" height="420" rx="12" fill="#fff"/>
+<text x="55" y="350" font-size="18" font-weight="bold" fill="#1e293b">Study Materials</text>
+<rect x="640" y="327" width="130" height="34" rx="8" fill="#4f46e5"/><text x="705" y="350" text-anchor="middle" fill="#fff" font-size="14">Upload</text>
+<rect x="55" y="380" width="710" height="64" rx="10" fill="#f8fafc" stroke="#e2e8f0"/><rect x="70" y="395" width="30" height="34" rx="4" fill="#fecaca"/><text x="115" y="408" font-weight="bold" fill="#1e293b">Chapter 1 - Real Numbers.pdf</text><text x="115" y="430" font-size="13" fill="#64748b">Uploaded Sep 20 - 2.1 MB</text><text x="745" y="418" text-anchor="end" fill="#4f46e5">Download</text>
+<rect x="55" y="455" width="710" height="64" rx="10" fill="#f8fafc" stroke="#e2e8f0"/><rect x="70" y="470" width="30" height="34" rx="4" fill="#c7d2fe"/><text x="115" y="483" font-weight="bold" fill="#1e293b">Polynomials - Recorded Lecture</text><text x="115" y="505" font-size="13" fill="#64748b">Uploaded Sep 24 - 45 min</text><text x="745" y="493" text-anchor="end" fill="#4f46e5">Watch</text>
+<rect x="55" y="530" width="710" height="64" rx="10" fill="#f8fafc" stroke="#e2e8f0"/><rect x="70" y="545" width="30" height="34" rx="4" fill="#fecaca"/><text x="115" y="558" font-weight="bold" fill="#1e293b">Practice Problems Set 2.pdf</text><text x="115" y="580" font-size="13" fill="#64748b">Uploaded Sep 28 - 640 KB</text><text x="745" y="568" text-anchor="end" fill="#4f46e5">Download</text>
+<rect x="55" y="605" width="710" height="64" rx="10" fill="#f8fafc" stroke="#e2e8f0"/><rect x="70" y="620" width="30" height="34" rx="4" fill="#bbf7d0"/><text x="115" y="633" font-weight="bold" fill="#1e293b">Reference Link - Quadratic Equations</text><text x="115" y="655" font-size="13" fill="#64748b">Link - Oct 1</text><text x="745" y="643" text-anchor="end" fill="#4f46e5">Open</text>
+<rect x="810" y="310" width="360" height="420" rx="12" fill="#fff"/>
+<text x="830" y="350" font-size="18" font-weight="bold" fill="#1e293b">Class Chat</text>
+<g font-size="14"><rect x="830" y="370" width="250" height="50" rx="10" fill="#f1f5f9"/><text x="845" y="390" font-weight="bold" fill="#4f46e5">Mr. Kumar</text><text x="845" y="410" fill="#1e293b">Class starts at 4 PM today!</text>
+<rect x="900" y="435" width="250" height="50" rx="10" fill="#e0e7ff"/><text x="915" y="455" font-weight="bold" fill="#4f46e5">You</text><text x="915" y="475" fill="#1e293b">Will it be recorded, sir?</text>
+<rect x="830" y="500" width="250" height="50" rx="10" fill="#f1f5f9"/><text x="845" y="520" font-weight="bold" fill="#4f46e5">Mr. Kumar</text><text x="845" y="540" fill="#1e293b">Yes, uploaded after class.</text></g>
+<rect x="830" y="670" width="250" height="40" rx="8" fill="#fff" stroke="#cbd5e1"/><text x="845" y="695" fill="#94a3b8" font-size="14">Type a message...</text>
+<rect x="1090" y="670" width="60" height="40" rx="8" fill="#4f46e5"/><text x="1120" y="696" text-anchor="middle" fill="#fff">Send</text>
+</svg>

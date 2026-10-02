@@ -1,0 +1,116 @@
+import crypto from 'node:crypto';
+import mongoose from 'mongoose';
+import { User, Booking, Review } from '../models/index.js';
+import { ApiError, asyncHandler, requireFields } from '../utils/ApiError.js';
+
+const PEOPLE = 'name email avatarColor subjects';
+const escapeRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+async function ratingsFor(tutorIds) {
+  const rows = await Review.aggregate([
+    { $match: { tutor: { $in: tutorIds } } },
+    { $group: { _id: '$tutor', avg: { $avg: '$rating' }, count: { $sum: 1 } } },
+  ]);
+  return Object.fromEntries(rows.map((r) => [String(r._id), { rating: Math.round(r.avg * 10) / 10, reviewCount: r.count }]));
+}
+
+export const listTutors = asyncHandler(async (req, res) => {
+  const filter = { role: 'tutor', isActive: true };
+  const q = req.query.q?.trim();
+  if (q) {
+    const rx = new RegExp(escapeRegex(q), 'i');
+    filter.$or = [{ name: rx }, { subjects: rx }, { bio: rx }];
+  }
+  const tutors = await User.find(filter).sort('name').lean();
+  const ratings = await ratingsFor(tutors.map((t) => t._id));
+  res.json(tutors.map(({ password, __v, ...t }) => ({ ...t, ...(ratings[t._id] ?? { rating: null, reviewCount: 0 }) })));
+});
+
+export const getTutor = asyncHandler(async (req, res) => {
+  if (!mongoose.isValidObjectId(req.params.id)) throw ApiError.notFound('Tutor not found');
+  const tutor = await User.findOne({ _id: req.params.id, role: 'tutor' });
+  if (!tutor) throw ApiError.notFound('Tutor not found');
+  const [reviews, ratings] = await Promise.all([
+    Review.find({ tutor: tutor._id }).populate('student', 'name avatarColor').sort('-createdAt').limit(30),
+    ratingsFor([tutor._id]),
+  ]);
+  res.json({ tutor, reviews, ...(ratings[tutor._id] ?? { rating: null, reviewCount: 0 }) });
+});
+
+export const reviewTutor = asyncHandler(async (req, res) => {
+  const rating = Number(req.body.rating);
+  if (!(rating >= 1 && rating <= 5)) throw ApiError.badRequest('Rating must be between 1 and 5');
+  // Only students who completed a session with this tutor may review.
+  const hadSession = await Booking.exists({ tutor: req.params.id, student: req.user._id, status: { $in: ['confirmed', 'completed'] } });
+  if (!hadSession) throw ApiError.forbidden('You can review a tutor after a confirmed session with them');
+
+  const review = await Review.findOneAndUpdate(
+    { tutor: req.params.id, student: req.user._id },
+    { rating, comment: req.body.comment ?? '' },
+    { new: true, upsert: true }
+  );
+  res.status(201).json(review);
+});
+
+/* ------------------------------ Bookings ----------------------------- */
+
+export const listBookings = asyncHandler(async (req, res) => {
+  const filter = req.user.role === 'tutor' ? { tutor: req.user._id } : { student: req.user._id };
+  const bookings = await Booking.find(filter).populate('tutor', PEOPLE).populate('student', PEOPLE).sort('-startsAt');
+  res.json(bookings);
+});
+
+export const createBooking = asyncHandler(async (req, res) => {
+  requireFields(req.body, ['tutorId', 'subject', 'startsAt']);
+  const { tutorId, subject, startsAt, durationMinutes, note } = req.body;
+  if (new Date(startsAt) < new Date()) throw ApiError.badRequest('Pick a time in the future');
+  const tutor = await User.findOne({ _id: tutorId, role: 'tutor', isActive: true });
+  if (!tutor) throw ApiError.notFound('Tutor not found');
+
+  const booking = await Booking.create({ tutor: tutor._id, student: req.user._id, subject, startsAt, durationMinutes, note });
+  req.app.get('io')?.to(`user:${tutor._id}`).emit('notify', {
+    title: 'New booking request',
+    body: `${req.user.name} requested a ${subject} session`,
+    link: '/bookings',
+  });
+  res.status(201).json(await booking.populate([{ path: 'tutor', select: PEOPLE }, { path: 'student', select: PEOPLE }]));
+});
+
+/** Room details for a confirmed 1-on-1 booking (tutor or student only). */
+export const joinBooking = asyncHandler(async (req, res) => {
+  const booking = await Booking.findById(req.params.id);
+  if (!booking) throw ApiError.notFound('Booking not found');
+  const isTutor = String(booking.tutor) === String(req.user._id);
+  if (!isTutor && String(booking.student) !== String(req.user._id)) throw ApiError.forbidden();
+  if (booking.status !== 'confirmed') throw ApiError.badRequest('Only confirmed bookings can be joined');
+  res.json({ booking, roomName: booking.roomName, isTutor, displayName: req.user.name, email: req.user.email });
+});
+
+const TRANSITIONS = {
+  tutor: { pending: ['confirmed', 'declined'], confirmed: ['completed', 'cancelled'] },
+  student: { pending: ['cancelled'], confirmed: ['cancelled'] },
+};
+
+export const updateBookingStatus = asyncHandler(async (req, res) => {
+  const booking = await Booking.findById(req.params.id);
+  if (!booking) throw ApiError.notFound('Booking not found');
+
+  const isTutor = String(booking.tutor) === String(req.user._id);
+  const isStudent = String(booking.student) === String(req.user._id);
+  if (!isTutor && !isStudent) throw ApiError.forbidden();
+
+  const allowed = TRANSITIONS[isTutor ? 'tutor' : 'student'][booking.status] ?? [];
+  if (!allowed.includes(req.body.status)) throw ApiError.badRequest(`Cannot change a ${booking.status} booking to ${req.body.status}`);
+
+  booking.status = req.body.status;
+  if (booking.status === 'confirmed') booking.roomName = `EduConnect-1on1-${crypto.randomBytes(5).toString('hex')}`;
+  await booking.save();
+
+  const otherParty = isTutor ? booking.student : booking.tutor;
+  req.app.get('io')?.to(`user:${otherParty}`).emit('notify', {
+    title: 'Booking updated',
+    body: `Your ${booking.subject} session is now ${booking.status}`,
+    link: '/bookings',
+  });
+  res.json(await booking.populate([{ path: 'tutor', select: PEOPLE }, { path: 'student', select: PEOPLE }]));
+});

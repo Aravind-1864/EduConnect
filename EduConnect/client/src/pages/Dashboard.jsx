@@ -1,0 +1,244 @@
+import { Link, useNavigate } from 'react-router-dom';
+import { BookOpen, CalendarCheck, CalendarDays, ClipboardList, Flame, GraduationCap, Inbox, Timer, Trophy, Users, Video } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import { useFetch } from '../hooks/useFetch';
+import { Avatar, Badge, Button, EmptyState, ErrorState, SectionCard, Spinner, StatCard } from '../components/ui';
+import { ClassCard, SessionRow } from '../components/shared';
+import { fmtDateTime, fromNow, isOverdue } from '../utils/format';
+import { getStats, quoteOfTheDay } from '../utils/studyStats';
+
+function Sessions({ sessions }) {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  if (!sessions.length) return <EmptyState icon={Video} title="No upcoming sessions" text="Scheduled live classes will show up here." />;
+  return (
+    <div className="space-y-3">
+      {sessions.map((s) => {
+        const canJoin = s.status === 'live' || user.role === 'tutor';
+        return (
+          <SessionRow
+            key={s._id}
+            session={s}
+            classroom={s.classroom}
+            action={
+              <Button size="sm" variant={s.status === 'live' ? 'success' : 'secondary'} disabled={!canJoin} onClick={() => navigate(`/live/${s.classroom._id}/${s._id}`)}>
+                {user.role === 'tutor' && s.status === 'scheduled' ? 'Start' : 'Join'}
+              </Button>
+            }
+          />
+        );
+      })}
+    </div>
+  );
+}
+
+function Bookings({ bookings, role }) {
+  if (!bookings.length) return <p className="text-sm text-slate-500">No upcoming 1-on-1 sessions.</p>;
+  return (
+    <ul className="space-y-3">
+      {bookings.map((b) => {
+        const other = role === 'tutor' ? b.student : b.tutor;
+        return (
+          <li key={b._id} className="flex items-center gap-3">
+            <Avatar user={other} size="sm" />
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-medium">{b.subject} with {other.name}</p>
+              <p className="text-xs text-slate-500">{fmtDateTime(b.startsAt)}</p>
+            </div>
+            <Badge color={b.status === 'confirmed' ? 'green' : 'yellow'}>{b.status}</Badge>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
+function StudentDashboard({ data }) {
+  const { stats } = data;
+  return (
+    <>
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <StatCard label="Enrolled classes" value={stats.classes} icon={BookOpen} />
+        <StatCard label="Pending assignments" value={stats.pendingAssignments} icon={ClipboardList} tone="amber" />
+        <StatCard label="Upcoming sessions" value={stats.upcomingSessions} icon={Video} tone="green" />
+        <StatCard label="Average grade" value={stats.averageGrade === null ? '—' : `${stats.averageGrade}%`} icon={Trophy} tone="pink" />
+      </div>
+
+      <div className="mt-6 grid gap-6 lg:grid-cols-3">
+        <SectionCard title="Upcoming live sessions" className="lg:col-span-2">
+          <Sessions sessions={data.upcomingSessions} />
+        </SectionCard>
+        <SectionCard title="Assignments due">
+          {data.pendingAssignments.length ? (
+            <ul className="divide-y divide-slate-100">
+              {data.pendingAssignments.map((a) => (
+                <li key={a._id}>
+                  <Link to={`/classes/${a.classroom._id}/assignments/${a._id}`} className="flex items-center justify-between gap-3 py-3 hover:text-brand-600">
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium">{a.title}</p>
+                      <p className="text-xs text-slate-500">{a.classroom.title}</p>
+                    </div>
+                    <Badge color={isOverdue(a.dueDate) ? 'red' : 'yellow'}>{isOverdue(a.dueDate) ? 'Overdue' : `Due ${fromNow(a.dueDate)}`}</Badge>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-sm text-slate-500">You're all caught up 🎉</p>
+          )}
+        </SectionCard>
+      </div>
+
+      <div className="mt-6 grid gap-6 lg:grid-cols-3">
+        <SectionCard title="Recent grades">
+          {data.recentGrades.length ? (
+            <ul className="space-y-3">
+              {data.recentGrades.map((s) => (
+                <li key={s._id} className="flex items-center justify-between text-sm">
+                  <span className="truncate">{s.assignment.title}</span>
+                  <span className="font-semibold text-emerald-600">{s.grade}/{s.assignment.maxMarks}</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-sm text-slate-500">No graded work yet.</p>
+          )}
+        </SectionCard>
+        <SectionCard title="1-on-1 sessions" className="lg:col-span-2" action={<Link to="/tutors" className="text-sm font-medium text-brand-600">Find a tutor</Link>}>
+          <Bookings bookings={data.bookings} role="student" />
+        </SectionCard>
+      </div>
+    </>
+  );
+}
+
+function TutorDashboard({ data }) {
+  const { stats } = data;
+  return (
+    <>
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <StatCard label="Active classes" value={stats.classes} icon={BookOpen} />
+        <StatCard label="Total students" value={stats.students} icon={Users} tone="green" />
+        <StatCard label="Waiting to grade" value={stats.toGrade} icon={ClipboardList} tone="amber" />
+        <StatCard label="Booking requests" value={stats.pendingBookings} icon={CalendarCheck} tone="pink" />
+      </div>
+      <div className="mt-6 grid gap-6 lg:grid-cols-3">
+        <SectionCard title="Upcoming live sessions" className="lg:col-span-2">
+          <Sessions sessions={data.upcomingSessions} />
+        </SectionCard>
+        <SectionCard title="Needs grading">
+          {data.toGrade.length ? (
+            <ul className="divide-y divide-slate-100">
+              {data.toGrade.map((s) => (
+                <li key={s._id}>
+                  <Link to={`/classes/${s.assignment.classroom._id}/assignments/${s.assignment._id}`} className="flex items-center gap-3 py-3 hover:text-brand-600">
+                    <Avatar user={s.student} size="sm" />
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium">{s.student.name}</p>
+                      <p className="truncate text-xs text-slate-500">{s.assignment.title} · {fromNow(s.submittedAt)}</p>
+                    </div>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <EmptyState icon={Inbox} title="Inbox zero" text="No submissions waiting." />
+          )}
+        </SectionCard>
+      </div>
+      <SectionCard title="1-on-1 requests" className="mt-6" action={<Link to="/bookings" className="text-sm font-medium text-brand-600">Manage</Link>}>
+        <Bookings bookings={data.bookings} role="tutor" />
+      </SectionCard>
+    </>
+  );
+}
+
+function WelcomeBanner({ user, data }) {
+  const navigate = useNavigate();
+  const { today, goal, streak } = getStats(user._id);
+  const [quote, author] = quoteOfTheDay();
+  const pct = Math.min(100, Math.round((today / goal) * 100));
+  const live = data.upcomingSessions.find((s) => s.status === 'live');
+  const isTutor = user.role === 'tutor';
+
+  return (
+    <section className="relative mb-6 overflow-hidden rounded-3xl bg-gradient-to-br from-brand-600 via-purple-600 to-fuchsia-600 p-6 text-white shadow-xl shadow-brand-600/20 sm:p-8">
+      <div className="absolute inset-0 opacity-15" style={{ backgroundImage: 'radial-gradient(white 1px, transparent 1px)', backgroundSize: '22px 22px' }} />
+      <div className="absolute -right-16 -top-16 size-64 rounded-full bg-white/10 blur-2xl" />
+      <div className="relative flex flex-wrap items-center justify-between gap-6">
+        <div className="max-w-xl">
+          <h1 className="text-2xl font-bold text-white sm:text-3xl">Welcome back, {user.name.split(' ')[0]} 👋</h1>
+          <p className="mt-2 text-white/80">
+            {isTutor ? "Here's what's happening in your classes today." : `“${quote}” — ${author}`}
+          </p>
+          <div className="mt-5 flex flex-wrap gap-2">
+            {live && (
+              <button onClick={() => navigate(`/live/${live.classroom._id}/${live._id}`)} className="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2 text-sm font-semibold text-red-600 shadow-lg">
+                <span className="size-2 animate-pulse rounded-full bg-red-500" /> Join live: {live.title}
+              </button>
+            )}
+            <button onClick={() => navigate('/focus')} className="inline-flex items-center gap-2 rounded-xl bg-white/15 px-4 py-2 text-sm font-semibold text-white ring-1 ring-white/30 backdrop-blur hover:bg-white/25">
+              <Timer className="size-4" /> Start a focus session
+            </button>
+            <button onClick={() => navigate('/calendar')} className="inline-flex items-center gap-2 rounded-xl bg-white/15 px-4 py-2 text-sm font-semibold text-white ring-1 ring-white/30 backdrop-blur hover:bg-white/25">
+              <CalendarDays className="size-4" /> View calendar
+            </button>
+          </div>
+        </div>
+
+        {!isTutor && (
+          <div className="flex items-center gap-5 rounded-2xl bg-white/10 p-4 ring-1 ring-white/20 backdrop-blur">
+            <div className="relative size-20">
+              <svg viewBox="0 0 36 36" className="size-full -rotate-90">
+                <circle cx="18" cy="18" r="15.5" fill="none" stroke="rgb(255 255 255 / 0.2)" strokeWidth="3.5" />
+                <circle cx="18" cy="18" r="15.5" fill="none" stroke="white" strokeWidth="3.5" strokeLinecap="round" strokeDasharray={`${pct * 0.974} 100`} />
+              </svg>
+              <span className="absolute inset-0 flex items-center justify-center text-sm font-bold">{pct}%</span>
+            </div>
+            <div>
+              <p className="text-sm text-white/70">Today's study goal</p>
+              <p className="text-lg font-bold">{Math.round(today)} / {goal} min</p>
+              <p className="mt-1 flex items-center gap-1 text-sm text-white/90">
+                <Flame className="size-4 text-orange-300" /> {streak} day streak
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
+export default function Dashboard() {
+  const { user } = useAuth();
+  const { data, loading, error, reload } = useFetch('/dashboard');
+
+  if (loading && !data) return <Spinner />;
+  if (error) return <ErrorState message={error} onRetry={reload} />;
+
+  return (
+    <>
+      <WelcomeBanner user={user} data={data} />
+      {user.role === 'tutor' ? <TutorDashboard data={data} /> : <StudentDashboard data={data} />}
+
+      <div className="mt-8">
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="text-lg font-semibold">My classes</h2>
+          <Link to="/classes" className="text-sm font-medium text-brand-600">View all</Link>
+        </div>
+        {data.classes.length ? (
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {data.classes.slice(0, 6).map((c) => <ClassCard key={c._id} c={c} />)}
+          </div>
+        ) : (
+          <EmptyState
+            icon={GraduationCap}
+            title="No classes yet"
+            text={user.role === 'tutor' ? 'Create your first class to get started.' : 'Ask your tutor for a class code and join.'}
+            action={<Link to="/classes"><Button>{user.role === 'tutor' ? 'Create class' : 'Join a class'}</Button></Link>}
+          />
+        )}
+      </div>
+    </>
+  );
+}

@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 760" font-family="Segoe UI,Arial" font-size="15">
+<rect width="1200" height="760" fill="#f1f5f9"/>
+<rect width="230" height="760" fill="#064e3b"/>
+<text x="30" y="50" font-size="22" font-weight="bold" fill="#fff">Tutor Panel</text>
+<g fill="#a7f3d0"><text x="35" y="117">Dashboard</text><text x="35" y="162">My Classes</text><text x="35" y="207">Schedule Session</text><rect x="15" y="230" width="200" height="42" rx="8" fill="#16a34a"/><text x="35" y="257" fill="#fff">Assignments</text><text x="35" y="302">Availability</text><text x="35" y="347">Messages</text><text x="35" y="392">Reviews</text></g>
+<text x="270" y="60" font-size="26" font-weight="bold" fill="#1e293b">Algebra Worksheet - Submissions</text>
+<text x="270" y="90" fill="#64748b">Mathematics | Due Oct 3, 11:59 PM | Max marks: 20</text>
+<rect x="1010" y="40" width="160" height="42" rx="10" fill="#16a34a"/><text x="1090" y="67" text-anchor="middle" fill="#fff">+ New Assignment</text>
+<rect x="270" y="115" width="200" height="70" rx="10" fill="#fff"/><text x="290" y="145" fill="#64748b" font-size="13">Submitted</text><text x="290" y="172" font-size="22" font-weight="bold" fill="#16a34a">24 / 32</text>
+<rect x="490" y="115" width="200" height="70" rx="10" fill="#fff"/><text x="510" y="145" fill="#64748b" font-size="13">Graded</text><text x="510" y="172" font-size="22" font-weight="bold" fill="#4f46e5">15</text>
+<rect x="710" y="115" width="200" height="70" rx="10" fill="#fff"/><text x="730" y="145" fill="#64748b" font-size="13">Late</text><text x="730" y="172" font-size="22" font-weight="bold" fill="#dc2626">2</text>
+<rect x="270" y="210" width="900" height="510" rx="12" fill="#fff"/>
+<rect x="270" y="210" width="900" height="50" rx="12" fill="#f8fafc"/>
+<g font-weight="bold" fill="#475569"><text x="295" y="241">Student</text><text x="520" y="241">Submitted</text><text x="700" y="241">File</text><text x="850" y="241">Status</text><text x="990" y="241">Grade</text></g>
+<text x="295" y="300" fill="#1e293b">Anu Sharma</text><text x="520" y="300" fill="#64748b">Oct 1, 6:20 PM</text><text x="700" y="300" fill="#4f46e5">anu.pdf</text><rect x="850" y="282" width="80" height="26" rx="13" fill="#dcfce7"/><text x="890" y="300" text-anchor="middle" fill="#16a34a" font-size="13">Graded</text><text x="990" y="300" fill="#1e293b">18 / 20</text>
+<line x1="290" y1="325" x2="1150" y2="325" stroke="#e2e8f0"/>
+<text x="295" y="360" fill="#1e293b">Rahul Verma</text><text x="520" y="360" fill="#64748b">Oct 2, 9:05 AM</text><text x="700" y="360" fill="#4f46e5">rahul.pdf</text><rect x="850" y="342" width="80" height="26" rx="13" fill="#fef3c7"/><text x="890" y="360" text-anchor="middle" fill="#d97706" font-size="13">Pending</text><rect x="990" y="342" width="90" height="28" rx="6" fill="#4f46e5"/><text x="1035" y="361" text-anchor="middle" fill="#fff" font-size="13">Grade</text>
+<line x1="290" y1="385" x2="1150" y2="385" stroke="#e2e8f0"/>
+<text x="295" y="420" fill="#1e293b">Priya Nair</text><text x="520" y="420" fill="#64748b">Oct 4, 1:10 AM</text><text x="700" y="420" fill="#4f46e5">priya.docx</text><rect x="850" y="402" width="80" height="26" rx="13" fill="#fee2e2"/><text x="890" y="420" text-anchor="middle" fill="#dc2626" font-size="13">Late</text><rect x="990" y="402" width="90" height="28" rx="6" fill="#4f46e5"/><text x="1035" y="421" text-anchor="middle" fill="#fff" font-size="13">Grade</text>
+<line x1="290" y1="445" x2="1150" y2="445" stroke="#e2e8f0"/>
+<text x="295" y="480" fill="#1e293b">Karthik R</text><text x="520" y="480" fill="#94a3b8">-</text><text x="700" y="480" fill="#94a3b8">-</text><rect x="850" y="462" width="100" height="26" rx="13" fill="#f1f5f9"/><text x="900" y="480" text-anchor="middle" fill="#64748b" font-size="13">Not submitted</text><text x="990" y="480" fill="#94a3b8">-</text>
+<rect x="290" y="530" width="860" height="170" rx="10" fill="#f8fafc" stroke="#c7d2fe" stroke-dasharray="6 4"/>
+<text x="310" y="565" font-weight="bold" fill="#1e293b">Grade: Rahul Verma</text>
+<text x="310" y="600" fill="#475569" font-size="14">Marks</text><rect x="310" y="610" width="120" height="36" rx="6" fill="#fff" stroke="#cbd5e1"/><text x="325" y="634" fill="#1e293b">16</text><text x="440" y="634" fill="#64748b">/ 20</text>
+<text x="520" y="600" fill="#475569" font-size="14">Feedback</text><rect x="520" y="610" width="460" height="70" rx="6" fill="#fff" stroke="#cbd5e1"/><text x="535" y="635" fill="#1e293b" font-size="14">Good work! Recheck the steps in Q4.</text>
+<rect x="1000" y="640" width="130" height="40" rx="8" fill="#16a34a"/><text x="1065" y="666" text-anchor="middle" fill="#fff">Save Grade</text>
+</svg>

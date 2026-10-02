@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 760" font-family="Segoe UI,Arial" font-size="15">
+<rect width="1200" height="760" fill="#f1f5f9"/>
+<rect width="230" height="760" fill="#1e1b4b"/>
+<text x="30" y="50" font-size="22" font-weight="bold" fill="#fff">EduConnect</text>
+<rect x="15" y="90" width="200" height="42" rx="8" fill="#4f46e5"/>
+<g fill="#c7d2fe"><text x="35" y="117" fill="#fff">Dashboard</text><text x="35" y="170">My Classes</text><text x="35" y="215">Live Sessions</text><text x="35" y="260">Assignments</text><text x="35" y="305">Find Tutors</text><text x="35" y="350">Messages</text><text x="35" y="395">Profile</text><text x="35" y="720">Logout</text></g>
+<text x="270" y="55" font-size="26" font-weight="bold" fill="#1e293b">Welcome back, Student!</text>
+<rect x="830" y="28" width="230" height="38" rx="8" fill="#fff" stroke="#cbd5e1"/><text x="845" y="53" fill="#94a3b8">Search...</text>
+<circle cx="1120" cy="47" r="20" fill="#a5b4fc"/><text x="1120" y="53" text-anchor="middle" fill="#fff">S</text>
+<rect x="270" y="90" width="210" height="100" rx="12" fill="#fff"/><text x="290" y="125" fill="#64748b">Enrolled Classes</text><text x="290" y="168" font-size="32" font-weight="bold" fill="#4f46e5">5</text>
+<rect x="500" y="90" width="210" height="100" rx="12" fill="#fff"/><text x="520" y="125" fill="#64748b">Pending Assignments</text><text x="520" y="168" font-size="32" font-weight="bold" fill="#d97706">3</text>
+<rect x="730" y="90" width="210" height="100" rx="12" fill="#fff"/><text x="750" y="125" fill="#64748b">Upcoming Sessions</text><text x="750" y="168" font-size="32" font-weight="bold" fill="#16a34a">2</text>
+<rect x="960" y="90" width="210" height="100" rx="12" fill="#fff"/><text x="980" y="125" fill="#64748b">Average Grade</text><text x="980" y="168" font-size="32" font-weight="bold" fill="#db2777">86%</text>
+<rect x="270" y="215" width="560" height="250" rx="12" fill="#fff"/>
+<text x="290" y="250" font-size="18" font-weight="bold" fill="#1e293b">Upcoming Live Sessions</text>
+<rect x="290" y="270" width="520" height="80" rx="10" fill="#f8fafc" stroke="#e2e8f0"/><text x="310" y="302" font-weight="bold" fill="#1e293b">Mathematics - Calculus Basics</text><text x="310" y="328" fill="#64748b">Today, 4:00 PM - Mr. Kumar</text><rect x="700" y="292" width="90" height="36" rx="8" fill="#16a34a"/><text x="745" y="316" text-anchor="middle" fill="#fff">Join</text>
+<rect x="290" y="365" width="520" height="80" rx="10" fill="#f8fafc" stroke="#e2e8f0"/><text x="310" y="397" font-weight="bold" fill="#1e293b">Physics - Laws of Motion</text><text x="310" y="423" fill="#64748b">Tomorrow, 10:00 AM - Ms. Rao</text><rect x="700" y="387" width="90" height="36" rx="8" fill="#e2e8f0"/><text x="745" y="411" text-anchor="middle" fill="#64748b">Soon</text>
+<rect x="850" y="215" width="320" height="250" rx="12" fill="#fff"/>
+<text x="870" y="250" font-size="18" font-weight="bold" fill="#1e293b">Assignments Due</text>
+<text x="870" y="290" fill="#1e293b">Algebra Worksheet</text><text x="1150" y="290" text-anchor="end" fill="#dc2626">Oct 3</text><line x1="870" y1="305" x2="1150" y2="305" stroke="#e2e8f0"/>
+<text x="870" y="340" fill="#1e293b">Physics Lab Report</text><text x="1150" y="340" text-anchor="end" fill="#d97706">Oct 5</text><line x1="870" y1="355" x2="1150" y2="355" stroke="#e2e8f0"/>
+<text x="870" y="390" fill="#1e293b">English Essay</text><text x="1150" y="390" text-anchor="end" fill="#16a34a">Oct 9</text>
+<text x="270" y="510" font-size="18" font-weight="bold" fill="#1e293b">My Classes</text>
+<rect x="1030" y="487" width="140" height="34" rx="8" fill="#4f46e5"/><text x="1100" y="510" text-anchor="middle" fill="#fff" font-size="14">+ Join Class</text>
+<rect x="270" y="535" width="280" height="190" rx="12" fill="#fff"/><rect x="270" y="535" width="280" height="80" rx="12" fill="#6366f1"/><text x="290" y="585" fill="#fff" font-size="20" font-weight="bold">Mathematics</text><text x="290" y="650" fill="#1e293b">Mr. Kumar</text><text x="290" y="680" fill="#64748b">32 students</text>
+<rect x="570" y="535" width="280" height="190" rx="12" fill="#fff"/><rect x="570" y="535" width="280" height="80" rx="12" fill="#16a34a"/><text x="590" y="585" fill="#fff" font-size="20" font-weight="bold">Physics</text><text x="590" y="650" fill="#1e293b">Ms. Rao</text><text x="590" y="680" fill="#64748b">28 students</text>
+<rect x="870" y="535" width="300" height="190" rx="12" fill="#fff"/><rect x="870" y="535" width="300" height="80" rx="12" fill="#d97706"/><text x="890" y="585" fill="#fff" font-size="20" font-weight="bold">English</text><text x="890" y="650" fill="#1e293b">Mrs. Thomas</text><text x="890" y="680" fill="#64748b">40 students</text>
+</svg>

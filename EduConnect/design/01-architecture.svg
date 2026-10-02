@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" font-family="Segoe UI,Arial" font-size="15">
+<rect width="1000" height="560" fill="#f8fafc"/>
+<text x="500" y="40" text-anchor="middle" font-size="24" font-weight="bold" fill="#1e293b">System Architecture – Virtual Classroom</text>
+<g fill="#fff" stroke="#6366f1" stroke-width="2">
+<rect x="40" y="90" width="200" height="120" rx="12"/><rect x="40" y="250" width="200" height="120" rx="12"/><rect x="40" y="410" width="200" height="110" rx="12"/>
+</g>
+<g text-anchor="middle" fill="#1e293b"><text x="140" y="140" font-weight="bold">Student</text><text x="140" y="165" font-size="13">Browser / Mobile</text>
+<text x="140" y="300" font-weight="bold">Tutor</text><text x="140" y="325" font-size="13">Browser</text>
+<text x="140" y="455" font-weight="bold">Admin</text><text x="140" y="480" font-size="13">Admin Panel</text></g>
+<rect x="320" y="180" width="220" height="200" rx="12" fill="#e0e7ff" stroke="#4f46e5" stroke-width="2"/>
+<g text-anchor="middle" fill="#1e293b"><text x="430" y="215" font-weight="bold">Frontend</text><text x="430" y="245">React + Vite</text><text x="430" y="270">Tailwind CSS</text><text x="430" y="295">React Router</text><text x="430" y="320">Axios / Socket.io client</text><text x="430" y="355" font-size="12" fill="#64748b">Hosted on Vercel</text></g>
+<rect x="620" y="180" width="200" height="200" rx="12" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+<g text-anchor="middle" fill="#1e293b"><text x="720" y="215" font-weight="bold">Backend API</text><text x="720" y="245">Node.js + Express</text><text x="720" y="270">JWT Auth</text><text x="720" y="295">Socket.io (chat)</text><text x="720" y="320">Multer uploads</text><text x="720" y="355" font-size="12" fill="#64748b">Hosted on Render</text></g>
+<g fill="#fef3c7" stroke="#d97706" stroke-width="2"><rect x="860" y="90" width="120" height="80" rx="10"/><rect x="860" y="240" width="120" height="80" rx="10"/><rect x="860" y="390" width="120" height="80" rx="10"/></g>
+<g text-anchor="middle" fill="#1e293b" font-size="13"><text x="920" y="125" font-weight="bold">MongoDB</text><text x="920" y="145">Atlas</text>
+<text x="920" y="275" font-weight="bold">Cloudinary</text><text x="920" y="295">Files/Images</text>
+<text x="920" y="425" font-weight="bold">Jitsi Meet</text><text x="920" y="445">Live Video</text></g>
+<g stroke="#475569" stroke-width="2" fill="none"><path d="M240 150 L320 250"/><path d="M240 310 L320 280"/><path d="M240 465 L320 340"/><path d="M540 280 L620 280"/><path d="M820 230 L860 130"/><path d="M820 280 L860 280"/><path d="M540 350 C700 520 800 450 860 430"/></g>
+<text x="580" y="270" text-anchor="middle" font-size="12" fill="#475569">REST + WS</text>
+</svg>
