@@ -30,7 +30,7 @@ export const resetGoogleStatus = () => {
  * Controlled field for a session/booking's Google Meet link.
  * value = { meetUrl, autoMeet }. Tutors with Google connected can let EduConnect create the link.
  */
-export default function MeetLinkFields({ value, onChange, optional = true }) {
+export default function MeetLinkFields({ value, onChange, optional = true, hint }) {
   const google = useGoogleStatus();
   const canAuto = google?.configured && google?.connected;
   const invalid = value.meetUrl && !MEET_URL_RE.test(value.meetUrl.trim());
@@ -41,6 +41,7 @@ export default function MeetLinkFields({ value, onChange, optional = true }) {
         <Video className="size-5 text-emerald-600" />
         <p className="text-sm font-semibold text-slate-800">Google Meet link {optional && <span className="font-normal text-slate-500">(you can add it later)</span>}</p>
       </div>
+      {hint && <p className="-mt-1 text-xs text-slate-500">{hint}</p>}
 
       {canAuto && (
         <label className="flex cursor-pointer items-start gap-2 rounded-lg bg-surface p-3 ring-1 ring-slate-200">

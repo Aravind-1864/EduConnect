@@ -10,7 +10,7 @@ import { SessionRow } from '../../components/shared';
 import { toLocalInput } from '../../utils/format';
 import MeetLinkFields, { MEET_URL_RE } from '../../components/MeetLinkForm';
 
-function ScheduleModal({ classId, open, onClose, onCreated }) {
+function ScheduleModal({ classId, classMeetUrl, open, onClose, onCreated }) {
   const [form, setForm] = useState({ title: '', description: '', startsAt: toLocalInput(Date.now() + 3600e3), durationMinutes: 60 });
   const [meet, setMeet] = useState({ meetUrl: '', autoMeet: false });
   const [busy, setBusy] = useState(false);
@@ -41,7 +41,7 @@ function ScheduleModal({ classId, open, onClose, onCreated }) {
           <Input label="Starts at" type="datetime-local" required value={form.startsAt} onChange={set('startsAt')} />
           <Input label="Duration (min)" type="number" min={5} max={600} value={form.durationMinutes} onChange={set('durationMinutes')} />
         </div>
-        <MeetLinkFields value={meet} onChange={setMeet} />
+        <MeetLinkFields value={meet} onChange={setMeet} hint={classMeetUrl ? 'Leave empty to use the class meeting link.' : undefined} />
         <div className="flex justify-end gap-2">
           <Button type="button" variant="secondary" onClick={onClose}>Cancel</Button>
           <Button type="submit" loading={busy}>Schedule</Button>
@@ -131,7 +131,7 @@ export default function SessionsTab({ classroom }) {
         </>
       )}
 
-      <ScheduleModal classId={classroom._id} open={open} onClose={() => setOpen(false)} onCreated={(s) => setData((prev) => (prev.some((x) => x._id === s._id) ? prev : [...prev, s]))} />
+      <ScheduleModal classId={classroom._id} classMeetUrl={classroom.meetUrl} open={open} onClose={() => setOpen(false)} onCreated={(s) => setData((prev) => (prev.some((x) => x._id === s._id) ? prev : [...prev, s]))} />
     </>
   );
 }

@@ -7,17 +7,20 @@ import { useAuth } from '../context/AuthContext';
 import { useFetch } from '../hooks/useFetch';
 import { Button, EmptyState, ErrorState, Input, Modal, PageHeader, Spinner, Textarea } from '../components/ui';
 import { ClassCard } from '../components/shared';
+import MeetLinkFields, { MEET_URL_RE } from '../components/MeetLinkForm';
 
 function CreateClassModal({ open, onClose }) {
   const navigate = useNavigate();
   const [form, setForm] = useState({ title: '', subject: '', description: '' });
+  const [meet, setMeet] = useState({ meetUrl: '', autoMeet: false });
   const [busy, setBusy] = useState(false);
 
   const submit = async (e) => {
     e.preventDefault();
+    if (meet.meetUrl && !MEET_URL_RE.test(meet.meetUrl.trim())) return toast.error('Please enter a valid Google Meet link');
     setBusy(true);
     try {
-      const { data } = await api.post('/classes', form);
+      const { data } = await api.post('/classes', { ...form, ...meet });
       toast.success(`Class created - share code ${data.code} with students`);
       navigate(`/classes/${data._id}`);
     } catch (err) {
@@ -33,6 +36,7 @@ function CreateClassModal({ open, onClose }) {
         <Input label="Class title" required placeholder="e.g. Mathematics - Grade 10" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
         <Input label="Subject" required placeholder="e.g. Mathematics" value={form.subject} onChange={(e) => setForm({ ...form, subject: e.target.value })} />
         <Textarea label="Description" placeholder="What will students learn?" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+        <MeetLinkFields value={meet} onChange={setMeet} hint="Students see this link in the class and it is posted in the class chat." />
         <div className="flex justify-end gap-2">
           <Button type="button" variant="secondary" onClick={onClose}>Cancel</Button>
           <Button type="submit" loading={busy}>Create class</Button>

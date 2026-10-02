@@ -11,6 +11,8 @@ const classroomSchema = new mongoose.Schema(
     tutor: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     students: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     code: { type: String, unique: true },
+    // The class's standing Google Meet link; used by sessions that don't set their own.
+    meetUrl: { type: String, trim: true },
     color: { type: String },
     archived: { type: Boolean, default: false },
   },

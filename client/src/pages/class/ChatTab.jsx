@@ -6,6 +6,21 @@ import { useAuth } from '../../context/AuthContext';
 import { Avatar, Badge, Button, EmptyState, Spinner, cx } from '../../components/ui';
 import { fmtTime } from '../../utils/format';
 
+const URL_RE = /(https?:\/\/[^\s]+)/g;
+
+/** Renders message text with http(s) links made clickable (opened in a new tab). */
+function Linkified({ text }) {
+  return text.split(URL_RE).map((part, i) =>
+    i % 2 ? (
+      <a key={i} href={part} target="_blank" rel="noreferrer" className="break-all font-medium underline underline-offset-2">
+        {part}
+      </a>
+    ) : (
+      part
+    )
+  );
+}
+
 /** Real-time class chat. Also used inside the live session sidebar (compact). */
 export default function ChatTab({ classroom, compact }) {
   const { user } = useAuth();
@@ -64,7 +79,7 @@ export default function ChatTab({ classroom, compact }) {
                     <span>{fmtTime(m.createdAt)}</span>
                   </p>
                   <p className={cx('inline-block whitespace-pre-wrap break-words rounded-2xl px-3.5 py-2 text-left text-sm', mine ? 'bg-brand-600 text-white' : compact ? 'bg-slate-700 text-slate-100' : 'bg-slate-100 text-slate-800')}>
-                    {m.text}
+                    <Linkified text={m.text} />
                   </p>
                 </div>
               </div>

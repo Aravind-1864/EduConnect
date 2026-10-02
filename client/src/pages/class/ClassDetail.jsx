@@ -6,6 +6,7 @@ import { api, errorMessage } from '../../api/client';
 import { useFetch } from '../../hooks/useFetch';
 import { useSocket } from '../../context/SocketContext';
 import { Button, ErrorState, Input, Modal, Spinner, Textarea, cx } from '../../components/ui';
+import MeetLinkFields, { MEET_URL_RE } from '../../components/MeetLinkForm';
 import StreamTab from './StreamTab';
 import MaterialsTab from './MaterialsTab';
 import AssignmentsTab from './AssignmentsTab';
@@ -25,12 +26,14 @@ const TABS = [
 function SettingsModal({ classroom, open, onClose, onSaved }) {
   const navigate = useNavigate();
   const [form, setForm] = useState({ title: classroom.title, subject: classroom.subject, description: classroom.description });
+  const [meet, setMeet] = useState({ meetUrl: classroom.meetUrl ?? '', autoMeet: false });
   const [busy, setBusy] = useState(false);
 
   const save = async () => {
+    if (meet.meetUrl && !MEET_URL_RE.test(meet.meetUrl.trim())) return toast.error('Please enter a valid Google Meet link');
     setBusy(true);
     try {
-      await api.patch(`/classes/${classroom._id}`, form);
+      await api.patch(`/classes/${classroom._id}`, { ...form, ...meet });
       toast.success('Class updated');
       onSaved();
       onClose();
@@ -68,6 +71,7 @@ function SettingsModal({ classroom, open, onClose, onSaved }) {
       <Input label="Title" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
       <Input label="Subject" value={form.subject} onChange={(e) => setForm({ ...form, subject: e.target.value })} />
       <Textarea label="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+      <MeetLinkFields value={meet} onChange={setMeet} optional={false} hint="A new or changed link is posted in the class chat automatically." />
     </Modal>
   );
 }
@@ -112,6 +116,18 @@ export default function ClassDetail() {
               {classroom.tutor.name} · {classroom.students.length} students
             </p>
           </div>
+          <div className="flex flex-wrap items-center gap-2">
+            {classroom.meetUrl ? (
+              <a href={classroom.meetUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-lg bg-white px-4 py-2 text-sm font-semibold text-slate-900 shadow-sm hover:bg-white/90">
+                <Video className="size-4 text-emerald-600" /> Join class meeting
+              </a>
+            ) : (
+              classroom.isTutor && (
+                <button onClick={() => setSettingsOpen(true)} className="inline-flex items-center gap-2 rounded-lg bg-white/20 px-4 py-2 text-sm font-semibold backdrop-blur hover:bg-white/30">
+                  <Video className="size-4" /> Add Google Meet link
+                </button>
+              )
+            )}
           {classroom.isTutor && (
             <div className="flex items-center gap-2">
               <button onClick={copyCode} className="inline-flex items-center gap-2 rounded-lg bg-white/20 px-3 py-2 font-mono text-sm font-semibold tracking-widest backdrop-blur hover:bg-white/30">
@@ -122,6 +138,7 @@ export default function ClassDetail() {
               </button>
             </div>
           )}
+          </div>
         </div>
       </div>
 
