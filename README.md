@@ -13,9 +13,9 @@ A full-stack (MERN) platform where **tutors** run classes, live video sessions a
 | **Stream** | The tutor posts announcements, which appear live for every student. |
 | **Study materials** | Upload files (PDF, DOCX, PPTX, video and more, up to 25 MB) or share links. |
 | **Assignments** | Due dates, max marks, attachments. Students submit text and/or a file; late submissions are flagged automatically. Tutors see a submission list for the whole class, grade work and leave feedback. The student gets a live notification when graded. |
-| **Live sessions** | Schedule sessions; a session goes live when the tutor clicks "Start". Video comes from an embedded [Jitsi Meet](https://jitsi.org) room, with class chat beside it. Attendance is recorded. |
+| **Live sessions** | Classes run on **Google Meet**. When scheduling, a tutor pastes a Meet link, or (after connecting Google) EduConnect creates one automatically through the Google Meet API. The session goes live once it has a link; the class room page opens Meet in a new tab and keeps the class chat alongside. Attendance is recorded. |
 | **Real-time chat** | Each class has a Socket.io chat room, with "is typing…" indicators. |
-| **1-on-1 tutoring** | Search tutors by subject, view profiles and reviews, request a session. The tutor accepts or declines, then both join a private video room. |
+| **1-on-1 tutoring** | Search tutors by subject, view profiles and reviews, request a session. The tutor accepts (adding a Google Meet link) or declines, then both join from the Bookings page. |
 | **Ratings & reviews** | Students rate a tutor after a confirmed session. |
 | **Dashboards** | Separate views for each role: upcoming sessions, work due, grades, items waiting to be graded. |
 | **Admin panel** | Platform statistics; search, enable or disable users. |
@@ -30,7 +30,7 @@ A full-stack (MERN) platform where **tutors** run classes, live video sessions a
 - **Frontend:** React 18, Vite, Tailwind CSS v4, React Router, Axios, Socket.io client, lucide icons
 - **Backend:** Node.js, Express, Mongoose, Socket.io, JWT, Multer, Helmet, rate limiting
 - **Database:** MongoDB (Atlas or local). Without a configured database, an in-memory MongoDB with demo data is started automatically.
-- **Video:** Jitsi Meet (free, embedded)
+- **Video:** Google Meet (pasted links, or auto-created with the Google Meet REST API + OAuth 2.0)
 
 ## Getting started
 
@@ -117,7 +117,19 @@ All endpoints are prefixed with `/api`. Every endpoint except register/login req
 - **Backend → Render / Railway:** root `server`, start command `npm start`, set `MONGO_URI`, `JWT_SECRET`, `CLIENT_URL`, `NODE_ENV=production`.
 - **Frontend → Vercel / Netlify:** root `client`, build `npm run build`, output `dist`, set `VITE_API_URL=https://your-api.onrender.com`. Add a SPA rewrite of all routes to `/index.html`.
 - **Uploads:** files are stored on the server disk (`server/uploads`). On hosts with temporary disks (Render free tier), move them to Cloudinary or S3.
-- **Video:** the public `meet.jit.si` server limits embedded meetings to a few minutes. For production, set `VITE_JITSI_DOMAIN` to your own Jitsi server or a [JaaS](https://jaas.8x8.vc) domain. The "Open in new tab" button in the live room works with no limit.
+## Google Meet setup (optional, for automatic Meet links)
+
+Pasting a Meet link works with no setup. Automatic links need Google sign-in (OAuth 2.0); an API key alone cannot create meetings.
+
+1. In https://console.cloud.google.com create a project and enable the **Google Meet REST API**.
+2. **APIs & Services → OAuth consent screen**: choose **External**, fill in the app name and support email, add the scope `https://www.googleapis.com/auth/meetings.space.created`, and add each tutor's Google account under **Test users** (up to 100 while the app is in *Testing*).
+3. **APIs & Services → Credentials → Create credentials → OAuth client ID → Web application.** Under **Authorized redirect URIs** add:
+   - `https://<your-site>.onrender.com/api/google/callback`
+   - `http://localhost:5173/api/google/callback` (local development)
+4. Set `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` (Render → Environment, or `server/.env`).
+5. Tutors open **Profile → Google Meet → Connect Google**. The schedule and accept-booking forms then offer "Create the Meet link automatically".
+
+Google Meet cannot be embedded inside another website, so meetings open in a new tab.
 
 ## Roadmap ideas
 

@@ -8,17 +8,20 @@ import { useSocket } from '../../context/SocketContext';
 import { Button, EmptyState, Input, Modal, Spinner, Textarea } from '../../components/ui';
 import { SessionRow } from '../../components/shared';
 import { toLocalInput } from '../../utils/format';
+import MeetLinkFields, { MEET_URL_RE } from '../../components/MeetLinkForm';
 
 function ScheduleModal({ classId, open, onClose, onCreated }) {
   const [form, setForm] = useState({ title: '', description: '', startsAt: toLocalInput(Date.now() + 3600e3), durationMinutes: 60 });
+  const [meet, setMeet] = useState({ meetUrl: '', autoMeet: false });
   const [busy, setBusy] = useState(false);
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
 
   const submit = async (e) => {
     e.preventDefault();
+    if (meet.meetUrl && !MEET_URL_RE.test(meet.meetUrl.trim())) return toast.error('Please enter a valid Google Meet link');
     setBusy(true);
     try {
-      const { data } = await api.post(`/classes/${classId}/sessions`, { ...form, startsAt: new Date(form.startsAt).toISOString() });
+      const { data } = await api.post(`/classes/${classId}/sessions`, { ...form, ...meet, startsAt: new Date(form.startsAt).toISOString() });
       onCreated(data);
       toast.success('Session scheduled');
       onClose();
@@ -38,6 +41,7 @@ function ScheduleModal({ classId, open, onClose, onCreated }) {
           <Input label="Starts at" type="datetime-local" required value={form.startsAt} onChange={set('startsAt')} />
           <Input label="Duration (min)" type="number" min={5} max={600} value={form.durationMinutes} onChange={set('durationMinutes')} />
         </div>
+        <MeetLinkFields value={meet} onChange={setMeet} />
         <div className="flex justify-end gap-2">
           <Button type="button" variant="secondary" onClick={onClose}>Cancel</Button>
           <Button type="submit" loading={busy}>Schedule</Button>

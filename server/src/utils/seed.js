@@ -1,4 +1,3 @@
-import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import {
   User, Classroom, Session, Material, Assignment, Submission, Message, Announcement, Booking, Review,
@@ -8,7 +7,6 @@ export const DEMO_PASSWORD = 'password123';
 
 const hours = (h) => new Date(Date.now() + h * 60 * 60 * 1000);
 const days = (d) => hours(d * 24);
-const room = () => `EduConnect-demo-${crypto.randomBytes(5).toString('hex')}`;
 
 /** Wipes all collections and inserts a realistic demo dataset. */
 export async function seedDemoData() {
@@ -51,11 +49,11 @@ export async function seedDemoData() {
   });
 
   await Session.create([
-    { classroom: math._id, title: 'Quadratic Equations - Live Problem Solving', startsAt: hours(2), durationMinutes: 60, roomName: room(), createdBy: kumar._id },
-    { classroom: math._id, title: 'Introduction to Trigonometry', startsAt: days(2), durationMinutes: 60, roomName: room(), createdBy: kumar._id },
-    { classroom: math._id, title: 'Polynomials Recap', startsAt: days(-3), durationMinutes: 45, roomName: room(), status: 'ended', createdBy: kumar._id, attendees: ids(students.slice(0, 3)) },
-    { classroom: physics._id, title: 'Laws of Motion', startsAt: days(1), durationMinutes: 50, roomName: room(), createdBy: rao._id },
-    { classroom: english._id, title: 'Essay Structure Masterclass', startsAt: days(3), durationMinutes: 60, roomName: room(), createdBy: thomas._id },
+    { classroom: math._id, title: 'Quadratic Equations - Live Problem Solving', startsAt: hours(2), durationMinutes: 60, createdBy: kumar._id },
+    { classroom: math._id, title: 'Introduction to Trigonometry', startsAt: days(2), durationMinutes: 60, createdBy: kumar._id },
+    { classroom: math._id, title: 'Polynomials Recap', startsAt: days(-3), durationMinutes: 45, status: 'ended', createdBy: kumar._id, attendees: ids(students.slice(0, 3)) },
+    { classroom: physics._id, title: 'Laws of Motion', startsAt: days(1), durationMinutes: 50, createdBy: rao._id },
+    { classroom: english._id, title: 'Essay Structure Masterclass', startsAt: days(3), durationMinutes: 60, createdBy: thomas._id },
   ]);
 
   await Material.create([
@@ -94,9 +92,9 @@ export async function seedDemoData() {
   ]);
 
   await Booking.create([
-    { tutor: kumar._id, student: anu._id, subject: 'Calculus', startsAt: days(2), note: 'Need help with limits.', status: 'confirmed', roomName: room() },
+    { tutor: kumar._id, student: anu._id, subject: 'Calculus', startsAt: days(2), note: 'Need help with limits.', status: 'confirmed' },
     { tutor: kumar._id, student: others[2]._id, subject: 'Mathematics', startsAt: days(3), note: 'Exam prep.' },
-    { tutor: rao._id, student: anu._id, subject: 'Physics', startsAt: days(-5), status: 'completed', roomName: room() },
+    { tutor: rao._id, student: anu._id, subject: 'Physics', startsAt: days(-5), status: 'completed' },
   ]);
 
   await Review.create([

@@ -14,6 +14,12 @@ const userSchema = new mongoose.Schema(
     hourlyRate: { type: Number, min: 0, default: 0 },
     avatarColor: { type: String, default: '#6366f1' },
     isActive: { type: Boolean, default: true },
+    // Google account linked for automatic Meet links (tutors only). Token never leaves the server.
+    google: {
+      email: String,
+      refreshToken: { type: String, select: false },
+      connectedAt: Date,
+    },
   },
   { timestamps: true }
 );
@@ -31,6 +37,7 @@ userSchema.methods.comparePassword = function comparePassword(candidate) {
 userSchema.set('toJSON', {
   transform: (_doc, ret) => {
     delete ret.password;
+    if (ret.google) delete ret.google.refreshToken;
     delete ret.__v;
     return ret;
   },
