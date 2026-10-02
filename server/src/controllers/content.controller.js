@@ -4,6 +4,7 @@ import { Material, Session, Assignment, Submission } from '../models/index.js';
 import { ApiError, asyncHandler, requireFields } from '../utils/ApiError.js';
 import { publicUrl, UPLOAD_DIR } from '../middleware/upload.js';
 import { resolveMeetUrl } from '../utils/googleMeet.js';
+import { liveNowMessage, postClassMessage } from '../utils/chat.js';
 
 const PEOPLE = 'name email avatarColor';
 
@@ -51,7 +52,7 @@ export const listSessions = asyncHandler(async (req, res) => {
 export const createSession = asyncHandler(async (req, res) => {
   requireFields(req.body, ['title', 'startsAt']);
   const { title, description, startsAt, durationMinutes } = req.body;
-  // The Meet link is optional when scheduling; the tutor can add it before going live.
+  // A session gets its own Meet link if given; otherwise it uses the class's standing link.
   const { meetUrl, byApi } = await resolveMeetUrl(req.body, req.user._id);
   const session = await Session.create({
     classroom: req.classroom._id,
@@ -59,7 +60,7 @@ export const createSession = asyncHandler(async (req, res) => {
     description,
     startsAt,
     durationMinutes,
-    meetUrl: meetUrl || undefined,
+    meetUrl: meetUrl || req.classroom.meetUrl || undefined,
     meetCreatedByApi: byApi,
     createdBy: req.user._id,
   });
@@ -98,8 +99,13 @@ export const joinSession = asyncHandler(async (req, res) => {
   if (!session) throw ApiError.notFound('Session not found');
   if (['ended', 'cancelled'].includes(session.status)) throw ApiError.badRequest(`This session has ${session.status}`);
 
+  // A class link added after scheduling still applies to sessions without their own.
+  if (!session.meetUrl && req.classroom.meetUrl) session.meetUrl = req.classroom.meetUrl;
+
+  let wentLive = false;
   if (req.isClassTutor && session.status === 'scheduled' && session.meetUrl) {
     session.status = 'live';
+    wentLive = true;
     req.app.get('io')?.to(`class:${req.classroom._id}`).emit('session:updated', session);
   } else if (!req.isClassTutor && session.status !== 'live') {
     throw ApiError.badRequest('The tutor has not started this session yet');
@@ -107,6 +113,7 @@ export const joinSession = asyncHandler(async (req, res) => {
 
   if (!session.attendees.some((a) => String(a) === String(req.user._id))) session.attendees.push(req.user._id);
   await session.save();
+  if (wentLive) await postClassMessage(req.app, req.classroom._id, req.user._id, liveNowMessage(session.title, session.meetUrl));
   res.json({ session, isTutor: req.isClassTutor });
 });
 

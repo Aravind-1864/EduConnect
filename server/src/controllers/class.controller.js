@@ -1,5 +1,7 @@
 import { Classroom, Announcement, Assignment, Material, Session, Submission, Message } from '../models/index.js';
 import { ApiError, asyncHandler, requireFields } from '../utils/ApiError.js';
+import { resolveMeetUrl } from '../utils/googleMeet.js';
+import { meetLinkMessage, postClassMessage } from '../utils/chat.js';
 
 const PEOPLE = 'name email role avatarColor';
 
@@ -14,7 +16,9 @@ export const listMyClasses = asyncHandler(async (req, res) => {
 export const createClass = asyncHandler(async (req, res) => {
   requireFields(req.body, ['title', 'subject']);
   const { title, subject, description } = req.body;
-  const classroom = await Classroom.create({ title, subject, description, tutor: req.user._id });
+  const { meetUrl } = await resolveMeetUrl(req.body, req.user._id);
+  const classroom = await Classroom.create({ title, subject, description, meetUrl: meetUrl || undefined, tutor: req.user._id });
+  if (meetUrl) await postClassMessage(req.app, classroom._id, req.user._id, meetLinkMessage(meetUrl));
   res.status(201).json(classroom);
 });
 
@@ -43,7 +47,15 @@ export const updateClass = asyncHandler(async (req, res) => {
   for (const key of ['title', 'subject', 'description', 'archived']) {
     if (req.body[key] !== undefined) req.classroom[key] = req.body[key];
   }
+  let newLink = '';
+  if (req.body.meetUrl !== undefined || req.body.autoMeet) {
+    const { meetUrl } = await resolveMeetUrl(req.body, req.user._id);
+    if (meetUrl && meetUrl !== req.classroom.meetUrl) newLink = meetUrl;
+    req.classroom.meetUrl = meetUrl || undefined;
+  }
   await req.classroom.save();
+  // Share a new/changed link with the class in chat.
+  if (newLink) await postClassMessage(req.app, req.classroom._id, req.user._id, meetLinkMessage(newLink));
   res.json(req.classroom);
 });
 
