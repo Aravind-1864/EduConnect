@@ -95,7 +95,7 @@ export default function Landing() {
                 width="1536"
                 height="1024"
                 className="block aspect-[1430/1024] w-full origin-[58%_52%] scale-[1.18] object-cover object-right dark:brightness-[0.92]"
-                fetchPriority="high"
+                fetchpriority="high"
               />
             </div>
             <span className="absolute -bottom-3 left-10 h-6 w-28 -rotate-3 rounded-sm bg-highlight/70 shadow-sm" aria-hidden="true" />

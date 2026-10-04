@@ -57,9 +57,9 @@ export default function Calendar() {
   return (
     <>
       <PageHeader title="Calendar" subtitle="Live sessions, assignment deadlines and 1-on-1 tutoring in one view." />
-      <div className="grid gap-6 xl:grid-cols-3">
-        <section className="card p-5 xl:col-span-2">
-          <div className="mb-4 flex items-center justify-between">
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+        <section className="card min-w-0 p-5 xl:col-span-2">
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
             <h2 className="text-lg font-semibold">{format(month, 'MMMM yyyy')}</h2>
             <div className="flex items-center gap-1">
               <Button size="sm" variant="ghost" onClick={() => setMonth((m) => addMonths(m, -1))} aria-label="Previous month"><ChevronLeft className="size-4" /></Button>
@@ -68,10 +68,10 @@ export default function Calendar() {
             </div>
           </div>
 
-          <div className="grid grid-cols-7 text-center text-xs font-semibold uppercase tracking-wide text-slate-500">
+          <div className="grid grid-cols-[repeat(7,minmax(0,1fr))] text-center text-xs font-semibold uppercase tracking-wide text-slate-500">
             {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((d) => <div key={d} className="py-2">{d}</div>)}
           </div>
-          <div className="grid grid-cols-7 gap-1">
+          <div className="grid grid-cols-[repeat(7,minmax(0,1fr))] gap-1">
             {days.map((day) => {
               const list = byDay[format(day, 'yyyy-MM-dd')] ?? [];
               const active = isSameDay(day, selected);

@@ -140,7 +140,7 @@ export default function Admin() {
       </div>
 
       <div className="mt-6 grid gap-6 xl:grid-cols-3">
-        <div className="xl:col-span-2"><UsersTable /></div>
+        <div className="min-w-0 xl:col-span-2"><UsersTable /></div>
         <SectionCard title="Recent classes">
           <ul className="divide-y divide-slate-100">
             {data.recentClasses.map((c) => (
