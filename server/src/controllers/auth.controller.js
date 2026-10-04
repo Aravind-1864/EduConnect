@@ -1,12 +1,24 @@
 import { User } from '../models/index.js';
 import { signToken } from '../middleware/auth.js';
 import { ApiError, asyncHandler, requireFields } from '../utils/ApiError.js';
+import { parseEducation } from '../utils/catalog.js';
+
+function educationFrom(body) {
+  try {
+    return parseEducation(body.education);
+  } catch (message) {
+    throw ApiError.badRequest(message);
+  }
+}
 
 const authResponse = (user) => ({ token: signToken(user), user });
 
 export const register = asyncHandler(async (req, res) => {
   requireFields(req.body, ['name', 'email', 'password']);
   const { name, email, password, role = 'student', subjects, bio } = req.body;
+  // Students tell us what they study so we can suggest the right tutors.
+  const education = role === 'student' ? educationFrom(req.body) : null;
+  if (role === 'student' && !education) throw ApiError.badRequest('Tell us what you study (School class or BTech branch)');
 
   // Admin accounts cannot be self-registered.
   if (!['student', 'tutor'].includes(role)) throw ApiError.badRequest('Role must be student or tutor');
@@ -20,6 +32,7 @@ export const register = asyncHandler(async (req, res) => {
     role,
     bio,
     subjects: Array.isArray(subjects) ? subjects : [],
+    ...(education && { education }),
   });
   res.status(201).json(authResponse(user));
 });
@@ -27,7 +40,7 @@ export const register = asyncHandler(async (req, res) => {
 export const login = asyncHandler(async (req, res) => {
   requireFields(req.body, ['email', 'password']);
   const user = await User.findOne({ email: req.body.email.toLowerCase() }).select('+password');
-  if (!user || !(await user.comparePassword(req.body.password))) throw ApiError.unauthorized('Invalid email or password');
+  if (!user || user.isDemo || !(await user.comparePassword(req.body.password))) throw ApiError.unauthorized('Invalid email or password');
   if (!user.isActive) throw ApiError.forbidden('This account has been disabled');
   res.json(authResponse(user));
 });
@@ -37,13 +50,17 @@ export const me = (req, res) => res.json({ user: req.user });
 export const updateMe = asyncHandler(async (req, res) => {
   const editable = ['name', 'bio', 'subjects', 'hourlyRate', 'avatarColor'];
   for (const key of editable) if (req.body[key] !== undefined) req.user[key] = req.body[key];
+  if (req.user.role === 'student' && req.body.education !== undefined) {
+    const education = educationFrom(req.body);
+    if (education) req.user.education = education;
+  }
 
   if (req.body.newPassword) {
     const withPw = await User.findById(req.user._id).select('+password');
     if (!(await withPw.comparePassword(req.body.currentPassword || ''))) throw ApiError.badRequest('Current password is incorrect');
     if (req.body.newPassword.length < 6) throw ApiError.badRequest('New password must be at least 6 characters');
     withPw.password = req.body.newPassword;
-    for (const key of editable) withPw[key] = req.user[key];
+    for (const key of [...editable, 'education']) withPw[key] = req.user[key];
     await withPw.save();
     return res.json({ user: withPw });
   }

@@ -7,7 +7,7 @@ import { useAuth } from '../context/AuthContext';
 import { useFetch } from '../hooks/useFetch';
 import { Avatar, Badge, Button, ErrorState, Input, Modal, SectionCard, Select, Spinner, Textarea, cx } from '../components/ui';
 import { fromNow, toLocalInput } from '../utils/format';
-import { Rating } from './Tutors';
+import { DemoBadge, Rating } from './Tutors';
 
 function BookModal({ tutor, open, onClose }) {
   const navigate = useNavigate();
@@ -25,7 +25,7 @@ function BookModal({ tutor, open, onClose }) {
     setBusy(true);
     try {
       await api.post('/bookings', { ...form, tutorId: tutor._id, startsAt: new Date(form.startsAt).toISOString() });
-      toast.success(`Request sent to ${tutor.name}`);
+      toast.success(tutor.isDemo ? `Booking confirmed with ${tutor.name} (demo)` : `Request sent to ${tutor.name}`);
       navigate('/bookings');
     } catch (err) {
       toast.error(errorMessage(err));
@@ -119,13 +119,16 @@ export default function TutorProfile() {
         <section className="card p-6 text-center lg:self-start">
           <div className="flex justify-center"><Avatar user={tutor} size="xl" /></div>
           <h1 className="mt-4 text-xl font-bold">{tutor.name}</h1>
-          <div className="mt-1"><Rating rating={rating} count={reviewCount} /></div>
+          <div className="mt-1">{tutor.isDemo ? <DemoBadge /> : <Rating rating={rating} count={reviewCount} />}</div>
           <div className="mt-4 flex flex-wrap justify-center gap-1.5">
             {tutor.subjects.map((s) => <Badge key={s} color="blue">{s}</Badge>)}
           </div>
           {tutor.hourlyRate > 0 && <p className="mt-4 text-2xl font-bold">₹{tutor.hourlyRate}<span className="text-sm font-normal text-slate-500"> / hour</span></p>}
           {user.role === 'student' && (
             <Button className="mt-6 w-full" icon={CalendarPlus} onClick={() => setBooking(true)}>Book a session</Button>
+          )}
+          {tutor.isDemo && (
+            <p className="mt-3 text-xs text-slate-500">This is a sample tutor profile so you can try booking. Bookings with demo tutors are confirmed instantly.</p>
           )}
         </section>
 
@@ -134,7 +137,7 @@ export default function TutorProfile() {
             <p className="whitespace-pre-wrap text-slate-600">{tutor.bio || 'This tutor has not written a bio yet.'}</p>
           </SectionCard>
           <SectionCard title={`Reviews (${reviewCount})`}>
-            {user.role === 'student' && <div className="mb-4"><ReviewForm tutorId={tutor._id} onDone={reload} /></div>}
+            {user.role === 'student' && !tutor.isDemo && <div className="mb-4"><ReviewForm tutorId={tutor._id} onDone={reload} /></div>}
             {reviews.length ? (
               <ul className="divide-y divide-slate-100">
                 {reviews.map((r) => (

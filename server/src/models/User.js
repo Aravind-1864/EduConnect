@@ -14,6 +14,15 @@ const userSchema = new mongoose.Schema(
     hourlyRate: { type: Number, min: 0, default: 0 },
     avatarColor: { type: String, default: '#6366f1' },
     isActive: { type: Boolean, default: true },
+    // Students: what they study, used to suggest tutors.
+    education: {
+      level: { type: String, enum: ['school', 'btech'] },
+      grade: { type: Number, min: 1, max: 12 },
+      branch: { type: String },
+    },
+    // Tutors: sample profiles shipped with the app, and the student groups they teach.
+    isDemo: { type: Boolean, default: false },
+    audiences: [{ type: String }],
     // Google account linked for automatic Meet links (tutors only). Token never leaves the server.
     google: {
       email: String,

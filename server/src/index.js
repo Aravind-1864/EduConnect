@@ -5,11 +5,13 @@ import { createApp } from './app.js';
 import { initSocket } from './socket.js';
 import { seedDemoData } from './utils/seed.js';
 import { runMigrations } from './utils/migrate.js';
+import { ensureDemoTutors } from './utils/demoTutors.js';
 
 async function main() {
   const inMemory = await connectDB();
   if (inMemory) await seedDemoData();
   await runMigrations();
+  await ensureDemoTutors();
 
   const app = createApp();
   const server = http.createServer(app);

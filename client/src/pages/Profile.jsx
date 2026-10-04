@@ -3,6 +3,7 @@ import toast from 'react-hot-toast';
 import { api, errorMessage } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import { Avatar, Button, Input, PageHeader, SectionCard, Textarea, cx } from '../components/ui';
+import EducationFields, { educationComplete, educationLabel } from '../components/EducationFields';
 
 const COLORS = ['#4f46e5', '#16a34a', '#d97706', '#db2777', '#0891b2', '#7c3aed', '#dc2626', '#0f172a'];
 
@@ -15,15 +16,18 @@ export default function Profile() {
     hourlyRate: user.hourlyRate ?? 0,
     avatarColor: user.avatarColor,
   });
+  const [education, setEducation] = useState(user.education ?? {});
   const [pw, setPw] = useState({ currentPassword: '', newPassword: '' });
   const [busy, setBusy] = useState(null);
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
 
   const save = async (e) => {
     e.preventDefault();
+    if (user.role === 'student' && education.level && !educationComplete(education)) return toast.error('Choose your class or branch');
     setBusy('profile');
     try {
       const payload = { ...form, subjects: form.subjects.split(',').map((s) => s.trim()).filter(Boolean), hourlyRate: Number(form.hourlyRate) };
+      if (user.role === 'student' && educationComplete(education)) payload.education = education;
       const { data } = await api.patch('/auth/me', payload);
       setUser(data.user);
       toast.success('Profile saved');
@@ -56,6 +60,7 @@ export default function Profile() {
           <div className="flex justify-center"><Avatar user={{ ...user, ...form }} size="xl" /></div>
           <p className="mt-3 font-semibold">{form.name}</p>
           <p className="text-sm capitalize text-slate-500">{user.role} · {user.email}</p>
+          {user.education?.level && <p className="mt-2 inline-block rounded-full bg-brand-50 px-3 py-1 text-sm font-medium text-brand-700 dark:text-brand-300">{educationLabel(user.education)}</p>}
           <div className="mt-5 flex flex-wrap justify-center gap-2">
             {COLORS.map((c) => (
               <button
@@ -81,6 +86,7 @@ export default function Profile() {
                   <Input label="Hourly rate (₹)" type="number" min={0} value={form.hourlyRate} onChange={set('hourlyRate')} />
                 </div>
               )}
+              {user.role === 'student' && <EducationFields value={education} onChange={setEducation} />}
               <Button type="submit" loading={busy === 'profile'}>Save changes</Button>
             </form>
           </SectionCard>

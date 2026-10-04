@@ -7,6 +7,7 @@ import { errorMessage } from '../api/client';
 import { Logo } from '../components/AppLayout';
 import { Button, Input, cx } from '../components/ui';
 import { homeFor } from '../utils/routes';
+import EducationFields, { educationComplete } from '../components/EducationFields';
 
 const DEMO = [
   ['Student', 'student@educonnect.dev'],
@@ -89,15 +90,19 @@ export function Register() {
   const [form, setForm] = useState({
     name: '', email: '', password: '', role: params.get('role') === 'tutor' ? 'tutor' : 'student', subjects: '',
   });
+  const [education, setEducation] = useState({});
   const [busy, setBusy] = useState(false);
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
 
   const submit = async (e) => {
     e.preventDefault();
+    if (form.role === 'student' && !educationComplete(education)) {
+      return toast.error(education.level === 'btech' ? 'Choose your BTech branch' : education.level ? 'Choose your class' : 'Tell us what you are studying');
+    }
     setBusy(true);
     try {
       const subjects = form.subjects.split(',').map((s) => s.trim()).filter(Boolean);
-      const user = await register({ ...form, subjects });
+      const user = await register({ ...form, subjects, ...(form.role === 'student' && { education }) });
       toast.success('Account created!');
       navigate(homeFor(user), { replace: true });
     } catch (err) {
@@ -132,6 +137,7 @@ export function Register() {
         <Input label="Full name" required value={form.name} onChange={set('name')} />
         <Input label="Email" type="email" required autoComplete="email" value={form.email} onChange={set('email')} />
         <Input label="Password" type="password" required minLength={6} autoComplete="new-password" hint="At least 6 characters" value={form.password} onChange={set('password')} />
+        {form.role === 'student' && <EducationFields value={education} onChange={setEducation} />}
         {form.role === 'tutor' && (
           <Input label="Subjects you teach" placeholder="e.g. Mathematics, Physics" hint="Comma separated" value={form.subjects} onChange={set('subjects')} />
         )}

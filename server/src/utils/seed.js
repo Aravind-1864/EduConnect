@@ -26,7 +26,7 @@ export async function seedDemoData() {
     name: 'Anita Thomas', email: 'anita@educonnect.dev', role: 'tutor', avatarColor: '#db2777', hourlyRate: 400,
     subjects: ['English', 'Communication'], bio: 'Cambridge-certified English trainer. Essays, grammar and spoken English.',
   });
-  const anu = await mk({ name: 'Anu Sharma', email: 'student@educonnect.dev', role: 'student', avatarColor: '#d97706' });
+  const anu = await mk({ name: 'Anu Sharma', email: 'student@educonnect.dev', role: 'student', avatarColor: '#d97706', education: { level: 'school', grade: 10 } });
   const others = await Promise.all(
     [['Rahul Verma', '#0891b2'], ['Priya Nair', '#7c3aed'], ['Karthik R', '#dc2626'], ['Sneha Iyer', '#16a34a']].map(([name, avatarColor], i) =>
       mk({ name, email: `student${i + 2}@educonnect.dev`, role: 'student', avatarColor })

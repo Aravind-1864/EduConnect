@@ -67,6 +67,7 @@ c.patch('/assignments/:id/submissions/:submissionId', tutorOnly, content.gradeSu
 
 /* --------------------------- Tutors & bookings ------------------------ */
 router.get('/tutors', tutors.listTutors);
+router.get('/tutors/for-me', tutors.tutorsForMe);
 router.get('/tutors/:id', tutors.getTutor);
 router.post('/tutors/:id/reviews', allow('student'), tutors.reviewTutor);
 

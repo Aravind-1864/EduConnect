@@ -2,8 +2,9 @@ import mongoose from 'mongoose';
 import { User, Booking, Review } from '../models/index.js';
 import { ApiError, asyncHandler, requireFields } from '../utils/ApiError.js';
 import { resolveMeetUrl } from '../utils/googleMeet.js';
+import { educationLabel, groupFor } from '../utils/catalog.js';
 
-const PEOPLE = 'name email avatarColor subjects';
+const PEOPLE = 'name email avatarColor subjects isDemo';
 const escapeRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 async function ratingsFor(tutorIds) {
@@ -21,9 +22,42 @@ export const listTutors = asyncHandler(async (req, res) => {
     const rx = new RegExp(escapeRegex(q), 'i');
     filter.$or = [{ name: rx }, { subjects: rx }, { bio: rx }];
   }
-  const tutors = await User.find(filter).sort('name').lean();
-  const ratings = await ratingsFor(tutors.map((t) => t._id));
-  res.json(tutors.map(({ password, __v, ...t }) => ({ ...t, ...(ratings[t._id] ?? { rating: null, reviewCount: 0 }) })));
+  const tutors = await User.find(filter).sort({ isDemo: 1, name: 1 }).lean();
+  res.json(await withRatings(tutors));
+});
+
+async function withRatings(tutors) {
+  const ratings = await ratingsFor(tutors.filter((t) => !t.isDemo).map((t) => t._id));
+  // eslint-disable-next-line no-unused-vars
+  return tutors.map(({ password, __v, audiences, ...t }) => ({ ...t, ...(ratings[t._id] ?? { rating: null, reviewCount: 0 }) }));
+}
+
+/**
+ * Tutors suggested for the signed-in student's class or branch: demo tutors for that group
+ * plus real tutors who teach one of its subjects.
+ */
+export const tutorsForMe = asyncHandler(async (req, res) => {
+  const group = groupFor(req.user.education);
+  if (!group) return res.json({ needsEducation: req.user.role === 'student', label: null, subjects: [], tutors: [] });
+
+  const subjectRx = group.subjects.map((s) => new RegExp(`^${escapeRegex(s)}$`, 'i'));
+  const tutors = await User.find({
+    role: 'tutor',
+    isActive: true,
+    $or: [{ audiences: group.key }, { isDemo: { $ne: true }, subjects: { $in: subjectRx } }],
+  }).lean();
+
+  // Real tutors first, then demo tutors in the group's subject order.
+  const order = (t) => (t.isDemo ? group.subjects.findIndex((s) => t.subjects.includes(s)) : -1);
+  tutors.sort((a, b) => order(a) - order(b) || a.name.localeCompare(b.name));
+
+  res.json({
+    needsEducation: false,
+    label: educationLabel(req.user.education),
+    groupLabel: group.label,
+    subjects: group.subjects,
+    tutors: await withRatings(tutors),
+  });
 });
 
 export const getTutor = asyncHandler(async (req, res) => {
@@ -40,6 +74,7 @@ export const getTutor = asyncHandler(async (req, res) => {
 export const reviewTutor = asyncHandler(async (req, res) => {
   const rating = Number(req.body.rating);
   if (!(rating >= 1 && rating <= 5)) throw ApiError.badRequest('Rating must be between 1 and 5');
+  if (await User.exists({ _id: req.params.id, isDemo: true })) throw ApiError.badRequest('Demo tutors cannot be reviewed');
   // Only students who completed a session with this tutor may review.
   const hadSession = await Booking.exists({ tutor: req.params.id, student: req.user._id, status: { $in: ['confirmed', 'completed'] } });
   if (!hadSession) throw ApiError.forbidden('You can review a tutor after a confirmed session with them');
@@ -67,12 +102,23 @@ export const createBooking = asyncHandler(async (req, res) => {
   const tutor = await User.findOne({ _id: tutorId, role: 'tutor', isActive: true });
   if (!tutor) throw ApiError.notFound('Tutor not found');
 
-  const booking = await Booking.create({ tutor: tutor._id, student: req.user._id, subject, startsAt, durationMinutes, note });
-  req.app.get('io')?.to(`user:${tutor._id}`).emit('notify', {
-    title: 'New booking request',
-    body: `${req.user.name} requested a ${subject} session`,
-    link: '/bookings',
+  // Demo tutors confirm instantly so students can try the whole flow.
+  const booking = await Booking.create({
+    tutor: tutor._id,
+    student: req.user._id,
+    subject,
+    startsAt,
+    durationMinutes,
+    note,
+    status: tutor.isDemo ? 'confirmed' : 'pending',
   });
+  if (!tutor.isDemo) {
+    req.app.get('io')?.to(`user:${tutor._id}`).emit('notify', {
+      title: 'New booking request',
+      body: `${req.user.name} requested a ${subject} session`,
+      link: '/bookings',
+    });
+  }
   res.status(201).json(await booking.populate([{ path: 'tutor', select: PEOPLE }, { path: 'student', select: PEOPLE }]));
 });
 
