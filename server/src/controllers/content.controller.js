@@ -4,7 +4,7 @@ import { Material, Session, Assignment, Submission, Classroom } from '../models/
 import { ApiError, asyncHandler, requireFields } from '../utils/ApiError.js';
 import { publicUrl, UPLOAD_DIR } from '../middleware/upload.js';
 import { resolveMeetUrl } from '../utils/googleMeet.js';
-import { meetStartedMessage, newMeetMessage, postClassMessage, siteUrl } from '../utils/chat.js';
+import { meetStartedMessage, newMeetMessage, postClassMessage, siteUrl, videoLinkAddedMessage } from '../utils/chat.js';
 import { cleanMeetCode, MEET_CODE_RE } from '../utils/codes.js';
 
 const PEOPLE = 'name email avatarColor';
@@ -77,12 +77,16 @@ export const updateSession = asyncHandler(async (req, res) => {
   for (const key of ['title', 'description', 'startsAt', 'durationMinutes', 'status']) {
     if (req.body[key] !== undefined) session[key] = req.body[key];
   }
+  const previousLink = session.meetUrl;
   if (req.body.meetUrl !== undefined || req.body.autoMeet) {
     const { meetUrl, byApi } = await resolveMeetUrl(req.body, req.user._id);
     session.meetUrl = meetUrl || undefined;
     session.meetCreatedByApi = byApi;
   }
   await session.save();
+  if (session.meetUrl && session.meetUrl !== previousLink) {
+    await postClassMessage(req.app, req.classroom._id, req.user._id, videoLinkAddedMessage(session));
+  }
   req.app.get('io')?.to(`class:${req.classroom._id}`).emit('session:updated', session);
   res.json(session);
 });

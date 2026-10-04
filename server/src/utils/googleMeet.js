@@ -2,6 +2,7 @@ import jwt from 'jsonwebtoken';
 import { env } from '../config/env.js';
 import { User } from '../models/index.js';
 import { ApiError } from './ApiError.js';
+import { normaliseMeetingUrl } from './meetingLink.js';
 
 /*
  * Google Meet integration (OAuth 2.0 + Meet REST API v2).
@@ -14,16 +15,6 @@ const TOKEN_URL = 'https://oauth2.googleapis.com/token';
 const MEET_SPACES_URL = 'https://meet.googleapis.com/v2/spaces';
 const SCOPES = ['openid', 'email', 'https://www.googleapis.com/auth/meetings.space.created'];
 
-export const MEET_URL_RE = /^https:\/\/meet\.google\.com\/[a-z]{3}-[a-z]{4}-[a-z]{3}(\?.*)?$/i;
-
-/** Accepts a pasted Meet link (with or without https://) and returns it normalised, or throws. */
-export function normaliseMeetUrl(input) {
-  const raw = String(input ?? '').trim();
-  if (!raw) return '';
-  const url = /^https?:\/\//i.test(raw) ? raw.replace(/^http:/i, 'https:') : `https://${raw}`;
-  if (!MEET_URL_RE.test(url)) throw ApiError.badRequest('Enter a valid Google Meet link, like https://meet.google.com/abc-defg-hij');
-  return url;
-}
 
 export const redirectUri = (req) => env.google.redirectUri || `${req.protocol}://${req.get('host')}/api/google/callback`;
 
@@ -123,7 +114,7 @@ export async function createMeetLink(userId) {
  * an explicit `meetUrl` wins; otherwise `autoMeet: true` creates one with the tutor's Google account.
  */
 export async function resolveMeetUrl(body, tutorId) {
-  if (body.meetUrl) return { meetUrl: normaliseMeetUrl(body.meetUrl), byApi: false };
+  if (body.meetUrl) return { meetUrl: normaliseMeetingUrl(body.meetUrl), byApi: false };
   if (body.autoMeet === true || body.autoMeet === 'true') return { meetUrl: await createMeetLink(tutorId), byApi: true };
   return { meetUrl: '', byApi: false };
 }

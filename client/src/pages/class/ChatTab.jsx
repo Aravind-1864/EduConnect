@@ -8,6 +8,7 @@ import { useSocket } from '../../context/SocketContext';
 import { useAuth } from '../../context/AuthContext';
 import { Avatar, Badge, Button, EmptyState, Spinner, cx } from '../../components/ui';
 import { fmtBytes, fmtTime } from '../../utils/format';
+import { providerFor } from '../../utils/meetingLink';
 
 const URL_RE = /(https?:\/\/[^\s]+)/g;
 
@@ -26,6 +27,14 @@ function Linkified({ text }) {
   return text.split(URL_RE).map((part, i) => {
     if (i % 2 === 0) return part;
     const path = meetPath(part);
+    const provider = providerFor(part);
+    if (provider) {
+      return (
+        <a key={i} href={part} target="_blank" rel="noreferrer" className="font-semibold underline underline-offset-2">
+          Join on {provider}
+        </a>
+      );
+    }
     return path ? (
       <Link key={i} to={path} className="font-semibold underline underline-offset-2">
         Open class meet

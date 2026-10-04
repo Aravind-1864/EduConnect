@@ -13,9 +13,9 @@ A full-stack (MERN) platform where **tutors** run classes, live video sessions a
 | **Stream** | The tutor posts announcements, which appear live for every student. |
 | **Study materials** | Upload files (PDF, DOCX, PPTX, video and more, up to 25 MB) or share links. |
 | **Assignments** | Due dates, max marks, attachments. Students submit text and/or a file; late submissions are flagged automatically. Tutors see a submission list for the whole class, grade work and leave feedback. The student gets a live notification when graded. |
-| **Live sessions** | Classes run on **Google Meet**. When scheduling, a tutor pastes a Meet link, or (after connecting Google) EduConnect creates one automatically through the Google Meet API. The session goes live once it has a link; the class room page opens Meet in a new tab and keeps the class chat alongside. Attendance is recorded. |
+| **Class meets** | A teacher creates a class meet and gets a 6-character code, which is posted in the classroom chat. Students join with the code and attendance is recorded. The teacher can paste a Google Meet, Zoom or Microsoft Teams link, which is shared in the chat and shown as a "Join video call" button (it opens in a new tab). |
 | **Real-time chat** | Each class has a Socket.io chat room, with "is typing…" indicators. |
-| **1-on-1 tutoring** | Search tutors by subject, view profiles and reviews, request a session. The tutor accepts (adding a Google Meet link) or declines, then both join from the Bookings page. |
+| **1-on-1 tutoring** | Search tutors by subject, view profiles and reviews, request a session. The tutor accepts or declines the request. |
 | **Ratings & reviews** | Students rate a tutor after a confirmed session. |
 | **Dashboards** | Separate views for each role: upcoming sessions, work due, grades, items waiting to be graded. |
 | **Admin panel** | Platform statistics; search, enable or disable users. |
@@ -30,7 +30,7 @@ A full-stack (MERN) platform where **tutors** run classes, live video sessions a
 - **Frontend:** React 18, Vite, Tailwind CSS v4, React Router, Axios, Socket.io client, lucide icons
 - **Backend:** Node.js, Express, Mongoose, Socket.io, JWT, Multer, Helmet, rate limiting
 - **Database:** MongoDB (Atlas or local). Without a configured database, an in-memory MongoDB with demo data is started automatically.
-- **Video:** Google Meet (pasted links, or auto-created with the Google Meet REST API + OAuth 2.0)
+- **Video:** teachers paste a Google Meet, Zoom or Teams link (only those hosts are accepted); the optional Google OAuth integration below can create Meet links automatically, but is not enabled in the UI
 
 ## Getting started
 

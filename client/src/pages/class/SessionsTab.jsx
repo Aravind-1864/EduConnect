@@ -9,17 +9,21 @@ import { Button, EmptyState, Input, Modal, Spinner, Textarea } from '../../compo
 import { SessionRow } from '../../components/shared';
 import JoinMeetModal from '../../components/JoinMeetModal';
 import { toLocalInput } from '../../utils/format';
+import { meetingLinkError } from '../../utils/meetingLink';
 
 function CreateMeetModal({ classId, open, onClose, onCreated }) {
-  const [form, setForm] = useState({ title: '', description: '', startsAt: toLocalInput(Date.now() + 600e3), durationMinutes: 45 });
+  const [form, setForm] = useState({ title: '', description: '', startsAt: toLocalInput(Date.now() + 600e3), durationMinutes: 45, meetUrl: '' });
+  const [touched, setTouched] = useState(false);
   const [busy, setBusy] = useState(false);
+  const linkError = meetingLinkError(form.meetUrl);
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
 
   const submit = async (e) => {
     e.preventDefault();
+    if (linkError) return setTouched(true);
     setBusy(true);
     try {
-      const { data } = await api.post(`/classes/${classId}/sessions`, { ...form, startsAt: new Date(form.startsAt).toISOString() });
+      const { data } = await api.post(`/classes/${classId}/sessions`, { ...form, meetUrl: form.meetUrl.trim(), startsAt: new Date(form.startsAt).toISOString() });
       onCreated(data);
       toast.success(`Class meet created - code ${data.code} was shared in the classroom chat`, { duration: 6000 });
       onClose();
@@ -39,8 +43,22 @@ function CreateMeetModal({ classId, open, onClose, onCreated }) {
           <Input label="Starts at" type="datetime-local" required value={form.startsAt} onChange={set('startsAt')} />
           <Input label="Duration (min)" type="number" min={5} max={600} value={form.durationMinutes} onChange={set('durationMinutes')} />
         </div>
+        <div>
+          <Input
+            label="Video call link (optional)"
+            placeholder="https://meet.google.com/abc-defg-hij"
+            value={form.meetUrl}
+            onChange={set('meetUrl')}
+            onBlur={() => setTouched(true)}
+            error={touched ? linkError : ''}
+          />
+          <p className="mt-1.5 text-sm text-slate-600">
+            Create a meeting in{' '}
+            <a href="https://meet.google.com/new" target="_blank" rel="noreferrer" className="font-bold text-brand-600 hover:underline">Google Meet</a>, Zoom or Teams, then paste its link here. You can also add it later.
+          </p>
+        </div>
         <p className="rounded-lg bg-brand-50 p-3 text-sm text-brand-700 dark:text-brand-300">
-          A meet code (letters and numbers) is created and posted in this classroom's chat, so every student can join.
+          A meet code (letters and numbers) is created and posted in this classroom's chat, along with the video link if you add one.
         </p>
         <div className="flex justify-end gap-2">
           <Button type="button" variant="secondary" onClick={onClose}>Cancel</Button>

@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { ArrowLeft, CheckCircle2, Clock, Copy, PhoneOff, Users, Video } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, Clock, Copy, ExternalLink, PhoneOff, Users, Video } from 'lucide-react';
 import { api, errorMessage } from '../api/client';
 import { useSocket } from '../context/SocketContext';
-import { Avatar, Badge, Button, SectionCard, Spinner } from '../components/ui';
+import { Avatar, Badge, Button, Input, SectionCard, Spinner } from '../components/ui';
 import { SESSION_STATUS } from '../components/shared';
 import { fmtDateTime } from '../utils/format';
+import { meetingLinkError, providerFor } from '../utils/meetingLink';
 import ChatTab from './class/ChatTab';
 
 /**
@@ -50,6 +51,23 @@ export default function LiveSession({ oneOnOne }) {
     socket.on('session:updated', onUpdate);
     return () => socket.off('session:updated', onUpdate);
   }, [socket, classId, sessionId]);
+
+  const [linkDraft, setLinkDraft] = useState(null); // null = untouched, otherwise the text being edited
+  const [savingLink, setSavingLink] = useState(false);
+
+  const saveLink = async () => {
+    setSavingLink(true);
+    try {
+      const { data } = await api.patch(`/classes/${classId}/sessions/${sessionId}`, { meetUrl: linkDraft.trim() });
+      setInfo((prev) => ({ ...prev, meetUrl: data.meetUrl }));
+      setLinkDraft(null);
+      toast.success(data.meetUrl ? 'Video link saved and shared in the chat' : 'Video link removed');
+    } catch (err) {
+      toast.error(errorMessage(err));
+    } finally {
+      setSavingLink(false);
+    }
+  };
 
   const endMeet = async () => {
     if (!window.confirm('End this class meet for everyone?')) return;
@@ -121,7 +139,40 @@ export default function LiveSession({ oneOnOne }) {
                   <CheckCircle2 className="size-5" /> You've joined this class meet. Your attendance is recorded.
                 </p>
               )}
-              <p className="text-sm text-slate-500">Video calling will be added here soon. For now, use the classroom chat to talk with everyone.</p>
+              {info.meetUrl && info.status === 'live' && (
+                <>
+                  <a
+                    href={info.meetUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-brand-500 px-6 py-4 text-lg font-extrabold text-white shadow-[0_4px_0_var(--color-brand-700)] transition hover:-translate-y-px hover:bg-brand-600"
+                  >
+                    <Video className="size-5" /> Join video call on {providerFor(info.meetUrl) ?? 'the link'} <ExternalLink className="size-4" />
+                  </a>
+                  <p className="text-sm text-slate-500">Opens in a new tab. Keep this page open to follow the classroom chat.</p>
+                </>
+              )}
+              {!info.meetUrl && !info.isTutor && (
+                <p className="text-sm text-slate-500">Your tutor hasn't added a video link for this meet. Use the classroom chat to talk with everyone.</p>
+              )}
+              {info.isTutor && info.status !== 'ended' && (
+                <div className="rounded-xl border-2 border-dashed border-slate-300 p-4">
+                  <Input
+                    label={info.meetUrl ? 'Video call link' : 'Add a video call link'}
+                    placeholder="https://meet.google.com/abc-defg-hij"
+                    value={linkDraft ?? info.meetUrl ?? ''}
+                    onChange={(e) => setLinkDraft(e.target.value)}
+                    error={linkDraft !== null ? meetingLinkError(linkDraft) : ''}
+                  />
+                  <p className="mt-1.5 text-sm text-slate-600">
+                    Create a meeting in{' '}
+                    <a href="https://meet.google.com/new" target="_blank" rel="noreferrer" className="font-bold text-brand-600 hover:underline">Google Meet</a>, Zoom or Teams and paste its link. Students see it here and in the chat.
+                  </p>
+                  {linkDraft !== null && linkDraft.trim() !== (info.meetUrl ?? '') && !meetingLinkError(linkDraft) && (
+                    <Button size="sm" className="mt-3" loading={savingLink} onClick={saveLink}>{linkDraft.trim() ? 'Save link' : 'Remove link'}</Button>
+                  )}
+                </div>
+              )}
             </div>
           </section>
 
