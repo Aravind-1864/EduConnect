@@ -116,9 +116,27 @@ export const Booking = model(
       note: { type: String, default: '' },
       status: { type: String, enum: ['pending', 'confirmed', 'declined', 'cancelled', 'completed'], default: 'pending' },
       meetUrl: { type: String, trim: true },
+      slot: ref('Slot', false), // set when booked from a tutor's availability slot
     },
     { timestamps: true }
   )
+);
+
+/** A time a tutor offers for 1-on-1 sessions; a student books it (one booking per slot). */
+export const Slot = model(
+  'Slot',
+  new Schema(
+    {
+      tutor: ref('User'),
+      subject: { type: String, required: true, trim: true },
+      startsAt: { type: Date, required: true },
+      durationMinutes: { type: Number, default: 60, min: 15, max: 240 },
+      price: { type: Number, default: 0, min: 0 },
+      note: { type: String, default: '', maxlength: 300 },
+      booking: ref('Booking', false),
+    },
+    { timestamps: true }
+  ).index({ tutor: 1, startsAt: 1 })
 );
 
 export const Review = model(

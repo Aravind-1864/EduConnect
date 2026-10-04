@@ -20,6 +20,7 @@ const Admin = lazy(() => import('./pages/Admin'));
 const Focus = lazy(() => import('./pages/Focus'));
 const Calendar = lazy(() => import('./pages/Calendar'));
 const Grades = lazy(() => import('./pages/Grades'));
+const Availability = lazy(() => import('./pages/Availability'));
 
 function RequireAuth({ children, roles }) {
   const { user, loading } = useAuth();
@@ -62,8 +63,9 @@ export default function App() {
           <Route path="/classes" element={<Classes />} />
           <Route path="/classes/:classId" element={<ClassDetail />} />
           <Route path="/classes/:classId/assignments/:assignmentId" element={<AssignmentDetail />} />
-          <Route path="/tutors" element={<Tutors />} />
-          <Route path="/tutors/:id" element={<TutorProfile />} />
+          <Route path="/tutors" element={<RequireAuth roles={['student', 'admin']}><Tutors /></RequireAuth>} />
+          <Route path="/tutors/:id" element={<RequireAuth roles={['student', 'admin']}><TutorProfile /></RequireAuth>} />
+          <Route path="/availability" element={<RequireAuth roles={['tutor']}><Availability /></RequireAuth>} />
           <Route path="/bookings" element={<RequireAuth roles={['student', 'tutor']}><Bookings /></RequireAuth>} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/focus" element={<Focus />} />

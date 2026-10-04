@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
-  Award, BookOpen, CalendarCheck, CalendarDays, Flame, GraduationCap, LayoutDashboard, LogOut, Menu, Shield,
+  Award, BookOpen, CalendarCheck, CalendarClock, CalendarDays, Flame, GraduationCap, LayoutDashboard, LogOut, Menu, Shield,
   Timer, UserRound, Users, X,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -33,7 +33,7 @@ const NAV = {
     ]],
     ['Tutoring', [
       { to: '/bookings', label: '1-on-1 Requests', icon: CalendarCheck },
-      { to: '/tutors', label: 'Tutor Directory', icon: Users },
+      { to: '/availability', label: 'My Availability', icon: CalendarClock },
     ]],
     ['Tools', [
       { to: '/focus', label: 'Focus Timer', icon: Timer },
@@ -56,6 +56,7 @@ const PAGE_TITLES = {
   '/focus': 'Focus Timer',
   '/tutors': 'Tutors',
   '/bookings': 'Bookings',
+  '/availability': 'My Availability',
   '/profile': 'Profile',
   '/admin': 'Admin',
 };

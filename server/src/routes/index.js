@@ -8,6 +8,7 @@ import * as content from '../controllers/content.controller.js';
 import * as tutors from '../controllers/tutor.controller.js';
 import * as dash from '../controllers/dashboard.controller.js';
 import * as google from '../controllers/google.controller.js';
+import * as slots from '../controllers/slot.controller.js';
 
 const router = Router();
 
@@ -66,9 +67,17 @@ c.post('/assignments/:id/submit', upload.single('file'), content.submitAssignmen
 c.patch('/assignments/:id/submissions/:submissionId', tutorOnly, content.gradeSubmission);
 
 /* --------------------------- Tutors & bookings ------------------------ */
-router.get('/tutors', tutors.listTutors);
-router.get('/tutors/for-me', tutors.tutorsForMe);
-router.get('/tutors/:id', tutors.getTutor);
+// Browsing and booking tutors is for students (admins can view for management).
+router.get('/tutors', allow('student', 'admin'), tutors.listTutors);
+router.get('/tutors/for-me', allow('student'), tutors.tutorsForMe);
+router.get('/tutors/:id', allow('student', 'admin'), tutors.getTutor);
+router.get('/tutors/:id/slots', allow('student', 'admin'), slots.tutorSlots);
+
+/* ------------------------- Tutor availability ------------------------ */
+router.get('/slots/mine', allow('tutor'), slots.mySlots);
+router.post('/slots', allow('tutor'), slots.createSlots);
+router.delete('/slots/:id', allow('tutor'), slots.deleteSlot);
+router.post('/slots/:id/book', allow('student'), slots.bookSlot);
 router.post('/tutors/:id/reviews', allow('student'), tutors.reviewTutor);
 
 router.get('/bookings', tutors.listBookings);

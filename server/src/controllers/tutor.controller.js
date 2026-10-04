@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { User, Booking, Review } from '../models/index.js';
+import { User, Booking, Review, Slot } from '../models/index.js';
 import { ApiError, asyncHandler, requireFields } from '../utils/ApiError.js';
 import { resolveMeetUrl } from '../utils/googleMeet.js';
 import { educationLabel, groupFor } from '../utils/catalog.js';
@@ -172,6 +172,10 @@ export const updateBookingStatus = asyncHandler(async (req, res) => {
     if (meetUrl) booking.meetUrl = meetUrl;
   }
   await booking.save();
+  // A cancelled/declined slot booking frees the slot for other students (if it is still in the future).
+  if (booking.slot && ['cancelled', 'declined'].includes(booking.status)) {
+    await Slot.updateOne({ _id: booking.slot, booking: booking._id, startsAt: { $gt: new Date() } }, { $set: { booking: null } });
+  }
 
   const otherParty = isTutor ? booking.student : booking.tutor;
   req.app.get('io')?.to(`user:${otherParty}`).emit('notify', {

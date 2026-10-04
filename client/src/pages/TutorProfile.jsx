@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { ArrowLeft, CalendarPlus, Star } from 'lucide-react';
+import { ArrowLeft, CalendarClock, CalendarPlus, Star } from 'lucide-react';
 import { api, errorMessage } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import { useFetch } from '../hooks/useFetch';
 import { Avatar, Badge, Button, ErrorState, Input, Modal, SectionCard, Select, Spinner, Textarea, cx } from '../components/ui';
-import { fromNow, toLocalInput } from '../utils/format';
+import { fmtDateTime, fromNow, toLocalInput } from '../utils/format';
 import { DemoBadge, Rating } from './Tutors';
 
 function BookModal({ tutor, open, onClose }) {
@@ -100,6 +100,49 @@ function ReviewForm({ tutorId, onDone }) {
   );
 }
 
+/** The tutor's open time slots; students book one with a click (confirmed instantly). */
+function OpenSlots({ tutor, canBook }) {
+  const navigate = useNavigate();
+  const { data: slots, loading } = useFetch(`/tutors/${tutor._id}/slots`);
+  const [busyId, setBusyId] = useState(null);
+
+  const book = async (s) => {
+    if (!window.confirm(`Book ${s.subject} with ${tutor.name} on ${fmtDateTime(s.startsAt)}?`)) return;
+    setBusyId(s._id);
+    try {
+      await api.post(`/slots/${s._id}/book`, {});
+      toast.success(`Booked! ${s.subject} with ${tutor.name} is confirmed`);
+      navigate('/bookings');
+    } catch (err) {
+      toast.error(errorMessage(err));
+      setBusyId(null);
+    }
+  };
+
+  if (loading && !slots) return null;
+  return (
+    <SectionCard title="Available times" action={<CalendarClock className="size-5 text-slate-400" />}>
+      {slots?.length ? (
+        <ul className="grid gap-3 sm:grid-cols-2">
+          {slots.map((s) => (
+            <li key={s._id} className="flex flex-col gap-2 rounded-xl border border-slate-200 p-4">
+              <p className="font-medium">{s.subject}</p>
+              <p className="text-sm text-slate-500">{fmtDateTime(s.startsAt)} · {s.durationMinutes} min</p>
+              {s.note && <p className="text-sm italic text-slate-600">“{s.note}”</p>}
+              <div className="mt-auto flex items-center justify-between pt-1">
+                <span className="font-semibold">{s.price ? `₹${s.price}` : 'Free'}</span>
+                {canBook && <Button size="sm" loading={busyId === s._id} onClick={() => book(s)}>Book this time</Button>}
+              </div>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="text-sm text-slate-500">No open times right now.{canBook ? ' You can still request a custom time.' : ''}</p>
+      )}
+    </SectionCard>
+  );
+}
+
 export default function TutorProfile() {
   const { id } = useParams();
   const { user } = useAuth();
@@ -125,7 +168,7 @@ export default function TutorProfile() {
           </div>
           {tutor.hourlyRate > 0 && <p className="mt-4 text-2xl font-bold">₹{tutor.hourlyRate}<span className="text-sm font-normal text-slate-500"> / hour</span></p>}
           {user.role === 'student' && (
-            <Button className="mt-6 w-full" icon={CalendarPlus} onClick={() => setBooking(true)}>Book a session</Button>
+            <Button className="mt-6 w-full" icon={CalendarPlus} onClick={() => setBooking(true)}>{tutor.isDemo ? 'Book a session' : 'Request a custom time'}</Button>
           )}
           {tutor.isDemo && (
             <p className="mt-3 text-xs text-slate-500">This is a sample tutor profile so you can try booking. Bookings with demo tutors are confirmed instantly.</p>
@@ -133,6 +176,7 @@ export default function TutorProfile() {
         </section>
 
         <div className="space-y-6 lg:col-span-2">
+          {!tutor.isDemo && <OpenSlots tutor={tutor} canBook={user.role === 'student'} />}
           <SectionCard title="About">
             <p className="whitespace-pre-wrap text-slate-600">{tutor.bio || 'This tutor has not written a bio yet.'}</p>
           </SectionCard>
