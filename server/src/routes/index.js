@@ -48,6 +48,7 @@ c.post('/announcements', tutorOnly, cls.createAnnouncement);
 c.delete('/announcements/:id', tutorOnly, cls.deleteAnnouncement);
 
 c.get('/messages', cls.listMessages);
+c.post('/messages/attachment', upload.single('file'), cls.sendAttachment);
 
 c.get('/materials', content.listMaterials);
 c.post('/materials', tutorOnly, upload.single('file'), content.createMaterial);
@@ -95,5 +96,6 @@ router.delete('/google', google.disconnectGoogle);
 router.get('/admin/stats', allow('admin'), dash.adminStats);
 router.get('/admin/users', allow('admin'), dash.adminListUsers);
 router.patch('/admin/users/:id', allow('admin'), dash.adminUpdateUser);
+router.post('/admin/users/:id/reset-password', allow('admin'), dash.adminResetPassword);
 
 export default router;

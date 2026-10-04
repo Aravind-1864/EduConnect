@@ -2,7 +2,7 @@ import { useState } from 'react';
 import toast from 'react-hot-toast';
 import { api, errorMessage } from '../api/client';
 import { useAuth } from '../context/AuthContext';
-import { Avatar, Button, Input, PageHeader, SectionCard, Textarea, cx } from '../components/ui';
+import { Avatar, Button, Input, PageHeader, PasswordInput, SectionCard, Textarea, cx } from '../components/ui';
 import EducationFields, { educationComplete, educationLabel } from '../components/EducationFields';
 
 const COLORS = ['#4f46e5', '#16a34a', '#d97706', '#db2777', '#0891b2', '#7c3aed', '#dc2626', '#0f172a'];
@@ -93,8 +93,8 @@ export default function Profile() {
 
           <SectionCard title="Change password">
             <form onSubmit={changePassword} className="grid gap-4 sm:grid-cols-2">
-              <Input label="Current password" type="password" required autoComplete="current-password" value={pw.currentPassword} onChange={(e) => setPw({ ...pw, currentPassword: e.target.value })} />
-              <Input label="New password" type="password" required minLength={6} autoComplete="new-password" value={pw.newPassword} onChange={(e) => setPw({ ...pw, newPassword: e.target.value })} />
+              <PasswordInput label="Current password" required autoComplete="current-password" value={pw.currentPassword} onChange={(e) => setPw({ ...pw, currentPassword: e.target.value })} />
+              <PasswordInput label="New password" required minLength={6} autoComplete="new-password" value={pw.newPassword} onChange={(e) => setPw({ ...pw, newPassword: e.target.value })} />
               <div className="sm:col-span-2">
                 <Button type="submit" variant="secondary" loading={busy === 'password'}>Update password</Button>
               </div>

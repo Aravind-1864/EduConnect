@@ -86,7 +86,10 @@ export const Message = model(
     {
       classroom: ref('Classroom'),
       sender: ref('User'),
-      text: { type: String, required: true, trim: true, maxlength: 2000 },
+      text: { type: String, default: '', trim: true, maxlength: 2000 },
+      fileUrl: String, // optional attachment
+      fileName: String,
+      fileSize: Number,
     },
     { timestamps: true }
   )

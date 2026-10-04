@@ -5,7 +5,7 @@ import AppLayout from './components/AppLayout';
 import { Spinner } from './components/ui';
 import Landing from './pages/Landing';
 import { homeFor } from './utils/routes';
-import { Login, Register } from './pages/Auth';
+import { ForgotPassword, Login, Register } from './pages/Auth';
 
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const Classes = lazy(() => import('./pages/Classes'));
@@ -54,6 +54,7 @@ export default function App() {
         <Route path="/" element={<GuestOnly><Landing /></GuestOnly>} />
         <Route path="/login" element={<GuestOnly><Login /></GuestOnly>} />
         <Route path="/register" element={<GuestOnly><Register /></GuestOnly>} />
+        <Route path="/forgot-password" element={<GuestOnly><ForgotPassword /></GuestOnly>} />
 
         <Route path="/live/:classId/:sessionId" element={<RequireAuth><LiveSession /></RequireAuth>} />
         <Route path="/meet/:bookingId" element={<RequireAuth><LiveSession oneOnOne /></RequireAuth>} />

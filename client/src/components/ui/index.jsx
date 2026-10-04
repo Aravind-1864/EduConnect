@@ -1,5 +1,5 @@
-import { useEffect } from 'react';
-import { Loader2, X } from 'lucide-react';
+import { useEffect, useId, useState } from 'react';
+import { Eye, EyeOff, Loader2, X } from 'lucide-react';
 import { initials } from '../../utils/format';
 
 const cx = (...c) => c.filter(Boolean).join(' ');
@@ -32,21 +32,61 @@ export function Button({ variant = 'primary', size = 'md', loading, icon: Icon, 
   );
 }
 
-export function Field({ label, hint, children }) {
+export function Field({ label, hint, error, errorId, children }) {
   return (
     <label className="block">
       {label && <span className="label">{label}</span>}
       {children}
-      {hint && <span className="mt-1 block text-xs text-slate-500">{hint}</span>}
+      {error ? (
+        <span id={errorId} role="alert" className="mt-1 block text-sm font-semibold text-red-600 dark:text-red-400">{error}</span>
+      ) : (
+        hint && <span className="mt-1 block text-xs text-slate-500">{hint}</span>
+      )}
     </label>
   );
 }
 
-export const Input = ({ label, hint, className, ...props }) => (
-  <Field label={label} hint={hint}>
-    <input className={cx('input', className)} {...props} />
-  </Field>
-);
+export function Input({ label, hint, error, className, ...props }) {
+  const errorId = useId();
+  return (
+    <Field label={label} hint={hint} error={error} errorId={errorId}>
+      <input
+        className={cx('input', error && '!border-red-500 focus:!ring-red-100', className)}
+        aria-invalid={Boolean(error)}
+        aria-describedby={error ? errorId : undefined}
+        {...props}
+      />
+    </Field>
+  );
+}
+
+/** Password input with a show/hide toggle. */
+export function PasswordInput({ label = 'Password', hint, error, className, ...props }) {
+  const [visible, setVisible] = useState(false);
+  const errorId = useId();
+  return (
+    <Field label={label} hint={hint} error={error} errorId={errorId}>
+      <span className="relative block">
+        <input
+          type={visible ? 'text' : 'password'}
+          className={cx('input pr-11', error && '!border-red-500 focus:!ring-red-100', className)}
+          aria-invalid={Boolean(error)}
+          aria-describedby={error ? errorId : undefined}
+          {...props}
+        />
+        <button
+          type="button"
+          onClick={() => setVisible((v) => !v)}
+          className="absolute inset-y-0 right-0 flex items-center px-3 text-slate-500 hover:text-slate-900"
+          aria-label={visible ? 'Hide password' : 'Show password'}
+          title={visible ? 'Hide password' : 'Show password'}
+        >
+          {visible ? <EyeOff className="size-5" /> : <Eye className="size-5" />}
+        </button>
+      </span>
+    </Field>
+  );
+}
 
 export const Textarea = ({ label, hint, className, ...props }) => (
   <Field label={label} hint={hint}>

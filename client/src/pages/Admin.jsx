@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { BookOpen, ClipboardList, GraduationCap, Search, Users, Video } from 'lucide-react';
+import { BookOpen, ClipboardList, Copy, GraduationCap, Search, Users, Video } from 'lucide-react';
 import { api, errorMessage } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import { useFetch } from '../hooks/useFetch';
-import { Avatar, Badge, Button, ErrorState, PageHeader, SectionCard, Spinner, StatCard } from '../components/ui';
+import { Avatar, Badge, Button, ErrorState, Modal, PageHeader, SectionCard, Spinner, StatCard } from '../components/ui';
 import { fmtDate } from '../utils/format';
 
 function UsersTable() {
@@ -20,6 +20,18 @@ function UsersTable() {
 
   const params = new URLSearchParams({ ...(role && { role }), ...(debounced && { q: debounced }) }).toString();
   const { data: users, setData, loading } = useFetch(`/admin/users${params ? `?${params}` : ''}`);
+
+  const [reset, setReset] = useState(null); // { user, temporaryPassword }
+
+  const resetPassword = async (u) => {
+    if (!window.confirm(`Reset the password for ${u.name}? Their current password will stop working.`)) return;
+    try {
+      const { data } = await api.post(`/admin/users/${u._id}/reset-password`);
+      setReset({ user: u, temporaryPassword: data.temporaryPassword });
+    } catch (err) {
+      toast.error(errorMessage(err));
+    }
+  };
 
   const toggle = async (u) => {
     try {
@@ -75,10 +87,13 @@ function UsersTable() {
                   <td className="py-3 pr-4 text-slate-500">{fmtDate(u.createdAt)}</td>
                   <td className="py-3 pr-4"><Badge color={u.isActive ? 'green' : 'red'}>{u.isActive ? 'Active' : 'Disabled'}</Badge></td>
                   <td className="py-3 text-right">
-                    {u._id !== me._id && (
-                      <Button size="sm" variant={u.isActive ? 'secondary' : 'success'} onClick={() => toggle(u)}>
-                        {u.isActive ? 'Disable' : 'Enable'}
-                      </Button>
+                    {u._id !== me._id && !u.isDemo && (
+                      <div className="flex justify-end gap-2">
+                        <Button size="sm" variant="ghost" onClick={() => resetPassword(u)}>Reset password</Button>
+                        <Button size="sm" variant={u.isActive ? 'secondary' : 'success'} onClick={() => toggle(u)}>
+                          {u.isActive ? 'Disable' : 'Enable'}
+                        </Button>
+                      </div>
                     )}
                   </td>
                 </tr>
@@ -87,6 +102,18 @@ function UsersTable() {
           </table>
         </div>
       )}
+      <Modal open={Boolean(reset)} onClose={() => setReset(null)} title="Temporary password" footer={<Button onClick={() => setReset(null)}>Done</Button>}>
+        {reset && (
+          <>
+            <p className="text-slate-600">Share this temporary password with <b>{reset.user.name}</b> privately. Ask them to change it in their Profile after logging in.</p>
+            <div className="flex items-center gap-2 rounded-xl border-2 border-slate-900 bg-paper px-4 py-3 dark:border-slate-300">
+              <code className="flex-1 font-mono text-xl font-bold tracking-wider text-slate-900">{reset.temporaryPassword}</code>
+              <Button size="sm" variant="secondary" icon={Copy} onClick={() => { navigator.clipboard.writeText(reset.temporaryPassword); toast.success('Copied'); }}>Copy</Button>
+            </div>
+            <p className="text-sm text-slate-500">It won’t be shown again.</p>
+          </>
+        )}
+      </Modal>
     </SectionCard>
   );
 }

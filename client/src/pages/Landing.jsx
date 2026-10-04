@@ -36,7 +36,7 @@ function FeatureList({ items }) {
           </span>
           <div>
             <h3 className="text-lg font-extrabold">{title}</h3>
-            <p className="mt-1 leading-relaxed text-slate-600">{text}</p>
+            <p className="mt-1 text-[17px] leading-relaxed text-slate-600">{text}</p>
           </div>
         </li>
       ))}
@@ -52,15 +52,15 @@ export default function Landing() {
       <div className="relative mx-auto max-w-6xl px-6 sm:px-10">
         <header className="flex items-center justify-between py-6">
           <Logo />
-          <nav className="hidden gap-8 text-[15px] font-semibold text-slate-600 md:flex">
+          <nav className="hidden gap-9 text-base font-bold text-slate-700 md:flex">
             <a href="#how" className="hover:text-slate-900">How it works</a>
             <a href="#teachers" className="hover:text-slate-900">Teachers</a>
             <a href="#students" className="hover:text-slate-900">Students</a>
           </nav>
           <div className="flex items-center gap-3">
             <ThemeToggle />
-            <Link to="/login" className="hidden px-2 font-bold text-slate-900 sm:block">Log in</Link>
-            <Link to="/register" className="rounded-xl bg-brand-500 px-5 py-2.5 font-bold text-white shadow-[0_3px_0_var(--color-brand-700)] hover:bg-brand-600">
+            <Link to="/login" className="hidden rounded-xl px-4 py-2.5 text-base font-bold text-slate-900 hover:bg-slate-100 sm:block">Log in</Link>
+            <Link to="/register" className="rounded-xl bg-brand-500 px-6 py-3 text-base font-extrabold text-white shadow-[0_3px_0_var(--color-brand-700)] hover:bg-brand-600">
               Sign up
             </Link>
           </div>
@@ -72,42 +72,48 @@ export default function Landing() {
             <h1 className="mt-2 text-5xl font-black leading-[1.05] tracking-tight sm:text-6xl">
               Class, chat and homework, <span className="highlight">all in one notebook</span>.
             </h1>
-            <p className="mt-6 max-w-xl text-lg leading-relaxed text-slate-600">
+            <p className="mt-6 max-w-xl text-xl leading-relaxed text-slate-700">
               Teachers make a classroom and share a code. Students join, chat, attend class meets, hand in assignments and book a tutor when
               they’re stuck.
             </p>
             <div className="mt-8 flex flex-wrap gap-4">
-              <Link to="/register?role=tutor" className="rounded-xl bg-brand-500 px-6 py-3 font-bold text-white shadow-[0_3px_0_var(--color-brand-700)] hover:bg-brand-600">
+              <Link to="/register?role=tutor" className="rounded-xl bg-brand-500 px-8 py-4 text-lg font-extrabold text-white shadow-[0_4px_0_var(--color-brand-700)] hover:bg-brand-600">
                 I’m a teacher
               </Link>
-              <Link to="/register?role=student" className="rounded-xl border-2 border-slate-900 bg-surface px-6 py-3 font-bold text-slate-900 shadow-[0_3px_0_var(--color-slate-900)] hover:bg-slate-50 dark:border-slate-300">
+              <Link to="/register?role=student" className="rounded-xl border-2 border-slate-900 bg-surface px-8 py-4 text-lg font-extrabold text-slate-900 shadow-[0_4px_0_var(--color-slate-900)] hover:bg-slate-50 dark:border-slate-300">
                 I’m a student
               </Link>
             </div>
-            <p className="mt-6 text-sm text-slate-500">Free to use · Works in any browser, on phone or laptop</p>
+            <p className="mt-6 text-base text-slate-600">Free to use · Works in any browser, on phone or laptop</p>
           </div>
 
           <div className="relative hidden h-[460px] sm:block" aria-hidden="true">
             <StickyCard className="left-2 top-2 w-[22rem] -rotate-3">
+              <span className="absolute -top-3 left-1/2 h-6 w-24 -translate-x-1/2 rotate-2 rounded-sm bg-highlight/70 shadow-sm" />
               <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Classroom · 6th – A</p>
               <p className="mt-1 font-mono text-5xl font-bold tracking-[0.2em] text-slate-900">48213</p>
-              <p className="mt-1 text-[15px] text-slate-600">Share this code with your class.</p>
+              <p className="mt-1 text-base text-slate-600">Share this code with your class.</p>
             </StickyCard>
             <StickyCard className="right-0 top-36 w-80 rotate-[2.5deg]">
               <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Class meet started</p>
               <p className="mt-1 text-xl font-extrabold text-slate-900">Motion in a plane</p>
-              <p className="mt-1 text-[15px] text-slate-600">
+              <p className="mt-1 text-base text-slate-600">
                 Meet code <b className="font-mono tracking-widest text-slate-900">K7P3QX</b>
               </p>
               <p className="mt-3 flex items-center gap-1.5 text-sm font-bold text-emerald-700 dark:text-emerald-300">
                 <CheckCircle2 className="size-4" /> Attendance recorded
               </p>
             </StickyCard>
-            <StickyCard className="bottom-0 left-12 w-[21rem] -rotate-1">
-              <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Assignment graded</p>
-              <p className="mt-1 text-xl font-extrabold text-slate-900">Algebra worksheet · 18/20</p>
-              <p className="mt-1 text-[15px] text-slate-600">“Great work. Recheck step 4.”</p>
+            <StickyCard className="bottom-0 left-12 w-[21rem] -rotate-1 !bg-highlight dark:!text-ink">
+              <p className="text-xs font-bold uppercase tracking-wider text-ink/60">Assignment graded</p>
+              <p className="mt-1 text-xl font-extrabold text-ink">Algebra worksheet · 18/20</p>
+              <p className="hand mt-1 text-2xl leading-tight !text-ink">“Great work! Recheck step 4.”</p>
             </StickyCard>
+            <svg className="absolute left-0 top-[11.5rem] h-20 w-24 text-brand-500" viewBox="0 0 120 100" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round">
+              <path d="M8 88 C 30 40, 70 70, 96 22" />
+              <path d="M82 22 L 97 20 L 96 36" />
+            </svg>
+            <span className="hand absolute left-1 top-[16.5rem] -rotate-6 text-2xl">share it!</span>
           </div>
         </section>
 
@@ -118,7 +124,7 @@ export default function Landing() {
               <div key={title} className="card p-6">
                 <p className="hand text-4xl leading-none">{i + 1}.</p>
                 <h3 className="mt-2 text-xl font-extrabold">{title}</h3>
-                <p className="mt-2 leading-relaxed text-slate-600">{text}</p>
+                <p className="mt-2 text-[17px] leading-relaxed text-slate-600">{text}</p>
               </div>
             ))}
           </div>

@@ -30,12 +30,12 @@ export const SESSION_STATUS = {
 export function SessionRow({ session, classroom, action }) {
   const [color, label] = SESSION_STATUS[session.status];
   return (
-    <div className="flex flex-wrap items-center gap-4 rounded-xl border border-slate-200 p-4">
+    <div className="flex flex-wrap items-center gap-x-4 gap-y-3 rounded-xl border-2 border-slate-200 bg-surface p-4">
       <div className="rounded-xl p-3" style={{ background: `${classroom?.color ?? '#6366f1'}1a` }}>
         <Video className="size-5" style={{ color: classroom?.color ?? '#6366f1' }} />
       </div>
-      <div className="min-w-0 flex-1">
-        <p className="truncate font-medium">{session.title}</p>
+      <div className="min-w-[12rem] flex-1">
+        <p className="line-clamp-2 font-bold text-slate-900" title={session.title}>{session.title}</p>
         <p className="text-sm text-slate-500">
           {classroom?.title && `${classroom.title} · `}
           {fmtDateTime(session.startsAt)} · {session.durationMinutes} min

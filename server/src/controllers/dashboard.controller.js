@@ -1,3 +1,4 @@
+import crypto from 'node:crypto';
 import { Classroom, Session, Assignment, Submission, Booking, User, Material } from '../models/index.js';
 import { ApiError, asyncHandler } from '../utils/ApiError.js';
 
@@ -206,4 +207,16 @@ export const myGrades = asyncHandler(async (req, res) => {
     gradedCount: allGraded.length,
     classes: result,
   });
+});
+
+/** Admin: sets a random temporary password and returns it once (no email service yet). */
+export const adminResetPassword = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.params.id).select('+password');
+  if (!user || user.isDemo) throw ApiError.notFound('User not found');
+  if (String(user._id) === String(req.user._id)) throw ApiError.badRequest('Change your own password from Profile');
+  const alphabet = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+  const temporaryPassword = Array.from({ length: 10 }, () => alphabet[crypto.randomInt(alphabet.length)]).join('');
+  user.password = temporaryPassword;
+  await user.save();
+  res.json({ temporaryPassword });
 });

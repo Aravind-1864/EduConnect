@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { BookOpen, CalendarCheck, CalendarDays, ClipboardList, Flame, GraduationCap, Inbox, Timer, Trophy, Users, Video } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useFetch } from '../hooks/useFetch';
-import { Avatar, Badge, Button, EmptyState, ErrorState, SectionCard, Spinner, StatCard } from '../components/ui';
+import { Avatar, Badge, Button, EmptyState, ErrorState, SectionCard, Spinner, StatCard, cx } from '../components/ui';
 import { ClassCard, SessionRow } from '../components/shared';
 import { fmtDateTime, fromNow, isOverdue } from '../utils/format';
 import { getStats, quoteOfTheDay } from '../utils/studyStats';
@@ -63,6 +63,42 @@ function Bookings({ bookings, role }) {
   );
 }
 
+/** Minutes studied per day this week, from the Focus timer. */
+function WeeklyStudy() {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const { week, goal } = getStats(user._id);
+  const max = Math.max(goal, ...week.map((d) => d.minutes), 1);
+  const total = Math.round(week.reduce((sum, d) => sum + d.minutes, 0));
+  const daysMet = week.filter((d) => d.minutes >= goal).length;
+
+  return (
+    <SectionCard title="This week's study" action={<button onClick={() => navigate('/focus')} className="text-sm font-bold text-brand-600 hover:underline">Focus timer</button>}>
+      <div className="flex items-baseline gap-2">
+        <p className="text-3xl font-black text-slate-900">{total}</p>
+        <p className="text-sm text-slate-500">minutes · goal met on {daysMet}/7 days</p>
+      </div>
+      <div className="mt-4 flex h-28 items-end gap-2" role="img" aria-label={`Study minutes this week: ${week.map((d) => Math.round(d.minutes)).join(', ')}`}>
+        {week.map(({ date, minutes }) => {
+          const today = date.toDateString() === new Date().toDateString();
+          return (
+            <div key={date.toISOString()} className="flex flex-1 flex-col items-center gap-1.5">
+              <div className="flex w-full flex-1 items-end">
+                <div
+                  className={cx('w-full rounded-md border-2 border-slate-900 dark:border-slate-300', minutes >= goal ? 'bg-emerald-500' : today ? 'bg-brand-500' : 'bg-highlight')}
+                  style={{ height: `${Math.max(6, (minutes / max) * 100)}%`, opacity: minutes ? 1 : 0.35 }}
+                  title={`${Math.round(minutes)} min`}
+                />
+              </div>
+              <span className={cx('text-xs', today ? 'font-extrabold text-brand-600' : 'text-slate-500')}>{date.toLocaleDateString(undefined, { weekday: 'narrow' })}</span>
+            </div>
+          );
+        })}
+      </div>
+    </SectionCard>
+  );
+}
+
 function StudentDashboard({ data }) {
   const { stats } = data;
   return (
@@ -99,7 +135,8 @@ function StudentDashboard({ data }) {
         </SectionCard>
       </div>
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-3">
+      <div className="mt-6 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+        <WeeklyStudy />
         <SectionCard title="Recent grades">
           {data.recentGrades.length ? (
             <ul className="space-y-3">
@@ -114,7 +151,7 @@ function StudentDashboard({ data }) {
             <p className="text-sm text-slate-500">No graded work yet.</p>
           )}
         </SectionCard>
-        <SectionCard title="1-on-1 sessions" className="lg:col-span-2" action={<Link to="/tutors" className="text-sm font-medium text-brand-600">Find a tutor</Link>}>
+        <SectionCard title="1-on-1 sessions" className="md:col-span-2 xl:col-span-1" action={<Link to="/tutors" className="text-sm font-medium text-brand-600">Find a tutor</Link>}>
           <Bookings bookings={data.bookings} role="student" />
         </SectionCard>
       </div>

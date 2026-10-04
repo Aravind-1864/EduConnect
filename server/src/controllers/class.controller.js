@@ -3,6 +3,7 @@ import { ApiError, asyncHandler, requireFields } from '../utils/ApiError.js';
 import { resolveMeetUrl } from '../utils/googleMeet.js';
 import { meetLinkMessage, postClassMessage } from '../utils/chat.js';
 import { CLASS_CODE_RE, cleanClassCode } from '../utils/codes.js';
+import { publicUrl } from '../middleware/upload.js';
 
 const PEOPLE = 'name email role avatarColor';
 
@@ -112,4 +113,20 @@ export const deleteAnnouncement = asyncHandler(async (req, res) => {
 export const listMessages = asyncHandler(async (req, res) => {
   const messages = await Message.find({ classroom: req.classroom._id }).populate('sender', PEOPLE).sort({ createdAt: -1, _id: -1 }).limit(100);
   res.json(messages.reverse());
+});
+
+/** Sends a chat message with a file attachment (text optional). Text-only messages go through Socket.io. */
+export const sendAttachment = asyncHandler(async (req, res) => {
+  if (!req.file) throw ApiError.badRequest('Choose a file to send');
+  const message = await Message.create({
+    classroom: req.classroom._id,
+    sender: req.user._id,
+    text: String(req.body.text ?? '').trim().slice(0, 2000),
+    fileUrl: publicUrl(req.file),
+    fileName: req.file.originalname,
+    fileSize: req.file.size,
+  });
+  await message.populate('sender', PEOPLE);
+  req.app.get('io')?.to(`class:${req.classroom._id}`).emit('chat:message', message);
+  res.status(201).json(message);
 });

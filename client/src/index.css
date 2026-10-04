@@ -69,9 +69,9 @@
   --color-slate-100: #222d42;
   --color-slate-200: #2c3850;
   --color-slate-300: #3a4763;
-  --color-slate-400: #6b7a93;
-  --color-slate-500: #98a4b8;
-  --color-slate-600: #b9c2d1;
+  --color-slate-400: #8796ad;
+  --color-slate-500: #aab5c7;
+  --color-slate-600: #c6cedb;
   --color-slate-700: #d6dce6;
   --color-slate-800: #e7ebf1;
   --color-slate-900: #f2f4f8;
@@ -127,13 +127,19 @@
     background-size: 100% 36px;
     background-position: 0 18px;
   }
+  /* Lines get lighter on small screens so text stays easy to read. */
+  @media (max-width: 640px) {
+    .paper {
+      background-image: linear-gradient(color-mix(in srgb, var(--color-rule) 45%, transparent) 1px, transparent 1px);
+    }
+  }
   /* Outlined card with an offset "sticker" shadow */
   .card {
     @apply rounded-2xl border-2 border-slate-900 bg-surface;
     box-shadow: 4px 4px 0 var(--color-slate-900);
   }
   .dark .card {
-    border-color: var(--color-slate-300);
+    border-color: var(--color-slate-200);
     box-shadow: 4px 4px 0 #0a0f19;
   }
   .input {

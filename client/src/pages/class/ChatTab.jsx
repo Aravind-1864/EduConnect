@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { MessagesSquare, Send } from 'lucide-react';
+import toast from 'react-hot-toast';
+import { CheckCheck, FileText, Loader2, MessagesSquare, Paperclip, Send } from 'lucide-react';
+import { api, errorMessage, fileUrl } from '../../api/client';
 import { useFetch } from '../../hooks/useFetch';
 import { useSocket } from '../../context/SocketContext';
 import { useAuth } from '../../context/AuthContext';
 import { Avatar, Badge, Button, EmptyState, Spinner, cx } from '../../components/ui';
-import { fmtTime } from '../../utils/format';
+import { fmtBytes, fmtTime } from '../../utils/format';
 
 const URL_RE = /(https?:\/\/[^\s]+)/g;
 
@@ -45,6 +47,9 @@ export default function ChatTab({ classroom, compact }) {
   const [typing, setTyping] = useState(null);
   const bottomRef = useRef(null);
   const typingTimer = useRef(null);
+  const fileRef = useRef(null);
+  const [sending, setSending] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     if (!socket) return undefined;
@@ -70,45 +75,106 @@ export default function ChatTab({ classroom, compact }) {
   const send = (e) => {
     e.preventDefault();
     if (!text.trim() || !socket) return;
-    socket.emit('chat:send', { classId: classroom._id, text });
+    setSending(true);
+    socket.emit('chat:send', { classId: classroom._id, text }, (res) => {
+      setSending(false);
+      if (!res?.ok) toast.error('Message not sent. Check your connection and try again.');
+    });
     setText('');
+  };
+
+  const sendFile = async (file) => {
+    if (!file) return;
+    if (file.size > 25 * 1024 * 1024) return toast.error('File is too large (max 25 MB)');
+    const body = new FormData();
+    body.append('file', file);
+    if (text.trim()) body.append('text', text.trim());
+    setUploading(true);
+    try {
+      await api.post(`/classes/${classroom._id}/messages/attachment`, body);
+      setText('');
+    } catch (err) {
+      toast.error(errorMessage(err));
+    } finally {
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = '';
+    }
   };
 
   const tutorId = classroom.tutor._id;
 
   return (
-    <div className={cx('flex flex-col', compact ? 'h-full' : 'card h-[65vh]')}>
+    <div className={cx('flex flex-col', compact ? 'h-full' : 'card h-[calc(100vh-24rem)] min-h-[26rem]')}>
       <div className={cx('flex-1 space-y-4 overflow-y-auto', compact ? 'p-3' : 'p-5')}>
         {loading && !messages ? (
           <Spinner />
         ) : messages.length ? (
           messages.map((m) => {
             const mine = m.sender._id === user._id;
+            const isImage = /\.(png|jpe?g|gif|webp)$/i.test(m.fileUrl ?? '');
             return (
               <div key={m._id} className={cx('flex gap-2', mine && 'flex-row-reverse')}>
                 {!compact && <Avatar user={m.sender} size="sm" />}
-                <div className={cx('max-w-[75%]', mine && 'text-right')}>
-                  <p className={cx('mb-1 flex items-center gap-1.5 text-xs', compact ? 'text-slate-400' : 'text-slate-500', mine && 'justify-end')}>
-                    <span className="font-medium">{mine ? 'You' : m.sender.name}</span>
+                <div className={cx('flex max-w-[75%] flex-col', mine ? 'items-end' : 'items-start')}>
+                  <p className="mb-1 flex items-center gap-1.5 text-xs text-slate-500">
+                    <span className="font-bold">{mine ? 'You' : m.sender.name}</span>
                     {m.sender._id === tutorId && <Badge color="blue" className="!px-1.5 !py-0 text-[10px]">Tutor</Badge>}
                     <span>{fmtTime(m.createdAt)}</span>
                   </p>
-                  <p className={cx('inline-block whitespace-pre-wrap break-words rounded-2xl px-3.5 py-2 text-left text-sm', mine ? 'bg-brand-600 text-white' : compact ? 'bg-slate-700 text-slate-100' : 'bg-slate-100 text-slate-800')}>
-                    <Linkified text={m.text} />
-                  </p>
+                  {m.fileUrl && (
+                    <a
+                      href={fileUrl(m.fileUrl)}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="mb-1 block overflow-hidden rounded-2xl border-2 border-slate-200 bg-surface text-left hover:border-brand-300"
+                    >
+                      {isImage ? (
+                        <img src={fileUrl(m.fileUrl)} alt={m.fileName} className="max-h-56 max-w-xs object-cover" />
+                      ) : (
+                        <span className="flex items-center gap-3 px-3.5 py-2.5 text-sm">
+                          <span className="rounded-lg bg-brand-50 p-2 text-brand-600"><FileText className="size-4" /></span>
+                          <span className="min-w-0">
+                            <span className="block max-w-[14rem] truncate font-bold text-slate-900">{m.fileName}</span>
+                            <span className="block text-xs text-slate-500">{fmtBytes(m.fileSize)} · Open</span>
+                          </span>
+                        </span>
+                      )}
+                    </a>
+                  )}
+                  {m.text && (
+                    <p className={cx('inline-block whitespace-pre-wrap break-words rounded-2xl px-3.5 py-2 text-left text-[15px]', mine ? 'rounded-br-md bg-brand-500 text-white' : 'rounded-bl-md bg-slate-100 text-slate-800')}>
+                      <Linkified text={m.text} />
+                    </p>
+                  )}
+                  {mine && (
+                    <span className="mt-0.5 flex items-center gap-1 text-[11px] text-slate-400" title="Delivered to the classroom">
+                      <CheckCheck className="size-3.5" /> Sent
+                    </span>
+                  )}
                 </div>
               </div>
             );
           })
         ) : (
-          !compact && <EmptyState icon={MessagesSquare} title="No messages yet" text="Start the conversation!" />
+          !compact && <EmptyState icon={MessagesSquare} title="No messages yet" text="Say hello to your classroom." />
         )}
         <div ref={bottomRef} />
       </div>
-      <p className={cx('h-5 px-5 text-xs italic', compact ? 'text-slate-400' : 'text-slate-500')}>{typing && `${typing} is typing...`}</p>
-      <form onSubmit={send} className={cx('flex gap-2 border-t p-3', compact ? 'border-slate-700' : 'border-slate-100')}>
+      <p className="h-5 px-5 text-xs italic text-slate-500">{typing && `${typing} is typing...`}</p>
+      <form onSubmit={send} className="flex items-center gap-2 border-t-2 border-slate-100 p-3">
+        <input ref={fileRef} type="file" className="hidden" onChange={(e) => sendFile(e.target.files[0])} />
+        <button
+          type="button"
+          onClick={() => fileRef.current?.click()}
+          disabled={uploading}
+          className="rounded-xl p-2.5 text-slate-500 hover:bg-slate-100 hover:text-slate-900 disabled:opacity-50"
+          aria-label="Attach a file"
+          title="Attach a file (max 25 MB)"
+        >
+          {uploading ? <Loader2 className="size-5 animate-spin" /> : <Paperclip className="size-5" />}
+        </button>
         <input
-          className={cx('input', compact && 'border-slate-600 bg-slate-800 text-white')}
+          className="input"
           placeholder="Type a message..."
           value={text}
           maxLength={2000}
@@ -117,7 +183,7 @@ export default function ChatTab({ classroom, compact }) {
             socket?.emit('chat:typing', { classId: classroom._id });
           }}
         />
-        <Button type="submit" disabled={!text.trim()} aria-label="Send">
+        <Button type="submit" disabled={!text.trim() || sending} aria-label="Send message">
           <Send className="size-4" />
         </Button>
       </form>
