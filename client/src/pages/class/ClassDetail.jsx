@@ -102,7 +102,7 @@ export default function ClassDetail() {
         <ArrowLeft className="size-4" /> All classrooms
       </Link>
 
-      <div className="relative overflow-hidden rounded-2xl p-6 text-white shadow-sm sm:p-8" style={{ background: classroom.color }}>
+      <div className="relative overflow-hidden rounded-2xl border-2 border-slate-900 p-6 text-white shadow-[4px_4px_0_var(--color-slate-900)] sm:p-8 dark:border-slate-300 dark:shadow-[4px_4px_0_#0a0f19]" style={{ background: classroom.color }}>
         <div className="absolute -right-10 -top-10 size-48 rounded-full bg-white/10" />
         <div className="relative flex flex-wrap items-end justify-between gap-4">
           <div>

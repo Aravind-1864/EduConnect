@@ -6,11 +6,11 @@ const cx = (...c) => c.filter(Boolean).join(' ');
 export { cx };
 
 const VARIANTS = {
-  primary: 'bg-brand-600 text-white hover:bg-brand-700 shadow-sm',
-  secondary: 'bg-surface text-slate-700 border border-slate-300 hover:bg-slate-50',
+  primary: 'bg-brand-500 text-white shadow-[0_3px_0_var(--color-brand-700)] hover:bg-brand-600',
+  secondary: 'bg-surface text-slate-900 border-2 border-slate-900 shadow-[0_3px_0_var(--color-slate-900)] hover:bg-slate-50 dark:border-slate-300 dark:shadow-[0_3px_0_#0a0f19]',
   ghost: 'text-slate-600 hover:bg-slate-100',
-  danger: 'bg-red-600 text-white hover:bg-red-700',
-  success: 'bg-emerald-600 text-white hover:bg-emerald-700',
+  danger: 'bg-red-600 text-white shadow-[0_3px_0_#991b1b] hover:bg-red-700',
+  success: 'bg-emerald-600 text-white shadow-[0_3px_0_#065f46] hover:bg-emerald-700',
 };
 const SIZES = { sm: 'px-3 py-1.5 text-xs', md: 'px-4 py-2 text-sm', lg: 'px-5 py-3 text-base' };
 
@@ -18,7 +18,7 @@ export function Button({ variant = 'primary', size = 'md', loading, icon: Icon, 
   return (
     <button
       className={cx(
-        'inline-flex items-center justify-center gap-2 rounded-lg font-medium transition disabled:cursor-not-allowed disabled:opacity-60',
+        'inline-flex items-center justify-center gap-2 rounded-xl font-bold transition active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60',
         VARIANTS[variant],
         SIZES[size],
         className

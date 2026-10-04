@@ -17,19 +17,30 @@ const DEMO = [
 
 function AuthShell({ title, subtitle, children }) {
   return (
-    <div className="grid min-h-screen lg:grid-cols-2">
-      <div className="flex flex-col justify-center px-6 py-12 sm:px-16">
+    <div className="paper grid min-h-screen lg:grid-cols-2">
+      <div className="relative flex flex-col justify-center px-6 py-12 sm:px-16">
+        <div className="pointer-events-none absolute inset-y-0 left-6 hidden w-0.5 bg-margin sm:block" />
         <Link to="/" className="mb-10"><Logo /></Link>
         <div className="w-full max-w-md">
-          <h1 className="text-3xl font-bold tracking-tight">{title}</h1>
-          <p className="mt-2 text-slate-500">{subtitle}</p>
-          <div className="mt-8">{children}</div>
+          <h1 className="text-4xl font-extrabold tracking-tight">{title}</h1>
+          <p className="mt-2 text-slate-600">{subtitle}</p>
+          <div className="card mt-8 p-6 sm:p-8">{children}</div>
         </div>
       </div>
-      <div className="hidden flex-col justify-center bg-gradient-to-br from-brand-600 to-purple-700 p-16 text-white lg:flex">
-        <GraduationCap className="size-14 opacity-90" />
-        <p className="mt-6 text-3xl font-bold leading-snug text-white">“The best classroom is the one where every student can be heard.”</p>
-        <p className="mt-4 text-white/80">Live sessions, assignments and tutoring - in one place.</p>
+      <div className="hidden flex-col justify-center gap-6 p-16 lg:flex">
+        <span className="hand -rotate-2 text-4xl">one classroom, one code</span>
+        <div className="card w-80 -rotate-2 p-6">
+          <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Classroom · 6th – A</p>
+          <p className="mt-1 font-mono text-5xl font-bold tracking-[0.2em] text-slate-900">48213</p>
+          <p className="mt-1 text-sm text-slate-600">Share this code with your class.</p>
+        </div>
+        <div className="card ml-16 w-80 rotate-2 p-6">
+          <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Class meet started</p>
+          <p className="mt-1 text-xl font-extrabold text-slate-900">Motion in a plane</p>
+          <p className="mt-1 text-sm text-slate-600">
+            Meet code <b className="font-mono tracking-widest">K7P3QX</b>
+          </p>
+        </div>
       </div>
     </div>
   );

@@ -172,44 +172,41 @@ function WelcomeBanner({ user, data }) {
   const isTutor = user.role === 'tutor';
 
   return (
-    <section className="relative mb-6 overflow-hidden rounded-3xl bg-gradient-to-br from-brand-600 via-purple-600 to-fuchsia-600 p-6 text-white shadow-xl shadow-brand-600/20 sm:p-8">
-      <div className="absolute inset-0 opacity-15" style={{ backgroundImage: 'radial-gradient(white 1px, transparent 1px)', backgroundSize: '22px 22px' }} />
-      <div className="absolute -right-16 -top-16 size-64 rounded-full bg-white/10 blur-2xl" />
+    <section className="card relative mb-6 overflow-hidden p-6 sm:p-8">
       <div className="relative flex flex-wrap items-center justify-between gap-6">
         <div className="max-w-xl">
-          <h1 className="text-2xl font-bold text-white sm:text-3xl">Welcome back, {user.name.split(' ')[0]} 👋</h1>
-          <p className="mt-2 text-white/80">
+          <span className="hand text-2xl">{isTutor ? 'your classes today' : 'keep going'}</span>
+          <h1 className="text-3xl font-black sm:text-4xl">
+            Welcome back, <span className="highlight">{user.name.split(' ')[0]}</span>
+          </h1>
+          <p className="mt-2 text-slate-600">
             {isTutor ? "Here's what's happening in your classes today." : `“${quote}” — ${author}`}
           </p>
-          <div className="mt-5 flex flex-wrap gap-2">
+          <div className="mt-5 flex flex-wrap gap-3">
             {live && (
-              <button onClick={() => navigate(`/live/${live.classroom._id}/${live._id}`)} className="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2 text-sm font-semibold text-red-600 shadow-lg">
-                <span className="size-2 animate-pulse rounded-full bg-red-500" /> Join live: {live.title}
-              </button>
+              <Button variant="danger" size="sm" onClick={() => navigate(`/live/${live.classroom._id}/${live._id}`)}>
+                <span className="size-2 animate-pulse rounded-full bg-white" /> Live now: {live.title}
+              </Button>
             )}
-            <button onClick={() => navigate('/focus')} className="inline-flex items-center gap-2 rounded-xl bg-white/15 px-4 py-2 text-sm font-semibold text-white ring-1 ring-white/30 backdrop-blur hover:bg-white/25">
-              <Timer className="size-4" /> Start a focus session
-            </button>
-            <button onClick={() => navigate('/calendar')} className="inline-flex items-center gap-2 rounded-xl bg-white/15 px-4 py-2 text-sm font-semibold text-white ring-1 ring-white/30 backdrop-blur hover:bg-white/25">
-              <CalendarDays className="size-4" /> View calendar
-            </button>
+            <Button variant="secondary" size="sm" icon={Timer} onClick={() => navigate('/focus')}>Start a focus session</Button>
+            <Button variant="secondary" size="sm" icon={CalendarDays} onClick={() => navigate('/calendar')}>View calendar</Button>
           </div>
         </div>
 
         {!isTutor && (
-          <div className="flex items-center gap-5 rounded-2xl bg-white/10 p-4 ring-1 ring-white/20 backdrop-blur">
+          <div className="flex items-center gap-5 rounded-2xl bg-paper p-4 dark:bg-slate-100">
             <div className="relative size-20">
               <svg viewBox="0 0 36 36" className="size-full -rotate-90">
-                <circle cx="18" cy="18" r="15.5" fill="none" stroke="rgb(255 255 255 / 0.2)" strokeWidth="3.5" />
-                <circle cx="18" cy="18" r="15.5" fill="none" stroke="white" strokeWidth="3.5" strokeLinecap="round" strokeDasharray={`${pct * 0.974} 100`} />
+                <circle cx="18" cy="18" r="15.5" fill="none" stroke="var(--color-slate-200)" strokeWidth="3.5" />
+                <circle cx="18" cy="18" r="15.5" fill="none" stroke="var(--color-brand-500)" strokeWidth="3.5" strokeLinecap="round" strokeDasharray={`${pct * 0.974} 100`} />
               </svg>
-              <span className="absolute inset-0 flex items-center justify-center text-sm font-bold">{pct}%</span>
+              <span className="absolute inset-0 flex items-center justify-center text-sm font-extrabold text-slate-900">{pct}%</span>
             </div>
             <div>
-              <p className="text-sm text-white/70">Today's study goal</p>
-              <p className="text-lg font-bold">{Math.round(today)} / {goal} min</p>
-              <p className="mt-1 flex items-center gap-1 text-sm text-white/90">
-                <Flame className="size-4 text-orange-300" /> {streak} day streak
+              <p className="text-sm font-semibold text-slate-500">Today's study goal</p>
+              <p className="text-lg font-extrabold text-slate-900">{Math.round(today)} / {goal} min</p>
+              <p className="mt-1 flex items-center gap-1 text-sm text-slate-600">
+                <Flame className="size-4 text-brand-500" /> {streak} day streak
               </p>
             </div>
           </div>

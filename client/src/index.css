@@ -2,69 +2,83 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/*
+ * "Notebook" design system: cream ruled paper, navy ink, orange accent,
+ * cards with a navy outline and an offset shadow, Caveat for handwritten notes.
+ */
 @theme {
-  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'Nunito', ui-sans-serif, system-ui, sans-serif;
+  --font-hand: 'Caveat', cursive;
 
   --color-surface: #ffffff;
-  --color-brand-50: #eef2ff;
-  --color-brand-100: #e0e7ff;
-  --color-brand-200: #c7d2fe;
-  --color-brand-300: #a5b4fc;
-  --color-brand-400: #818cf8;
-  --color-brand-500: #6366f1;
-  --color-brand-600: #4f46e5;
-  --color-brand-700: #4338ca;
-  --color-brand-800: #312e81;
-  --color-brand-900: #1e1b4b;
-  --color-brand-950: #13112e;
+  --color-paper: #fbf7ef;
+  --color-rule: #ebe3d3;
+  --color-margin: #f1b7a6;
+  --color-ink: #23324a;
+  --color-highlight: #ffd76a;
 
-  /* Slate is declared explicitly so dark mode can invert the scale. */
-  --color-slate-50: #f8fafc;
-  --color-slate-100: #f1f5f9;
-  --color-slate-200: #e2e8f0;
-  --color-slate-300: #cbd5e1;
-  --color-slate-400: #94a3b8;
-  --color-slate-500: #64748b;
-  --color-slate-600: #475569;
-  --color-slate-700: #334155;
-  --color-slate-800: #1e293b;
-  --color-slate-900: #0f172a;
-  --color-slate-950: #020617;
+  /* Brand = notebook orange */
+  --color-brand-50: #fdf0ea;
+  --color-brand-100: #fbdccd;
+  --color-brand-200: #f6bfa4;
+  --color-brand-300: #f09b74;
+  --color-brand-400: #e9804f;
+  --color-brand-500: #e2683c;
+  --color-brand-600: #d45a2e;
+  --color-brand-700: #b84e27;
+  --color-brand-800: #8a371b;
+  --color-brand-900: #4a2312;
+  --color-brand-950: #2d160b;
 
-  --animate-fade-up: fade-up 0.5s ease-out both;
+  /* Neutrals tuned toward navy ink */
+  --color-slate-50: #fbf7ef;
+  --color-slate-100: #f3ede1;
+  --color-slate-200: #e5dccb;
+  --color-slate-300: #d0c5b1;
+  --color-slate-400: #9aa2b1;
+  --color-slate-500: #6b7689;
+  --color-slate-600: #4c5b73;
+  --color-slate-700: #36445c;
+  --color-slate-800: #2a3850;
+  --color-slate-900: #23324a;
+  --color-slate-950: #16213a;
+
+  --animate-fade-up: fade-up 0.4s ease-out both;
   --animate-float: float 6s ease-in-out infinite;
 
   @keyframes fade-up {
-    from { opacity: 0; transform: translateY(12px); }
+    from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: none; }
   }
   @keyframes float {
     0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-10px); }
+    50% { transform: translateY(-8px); }
   }
 }
 
-/*
- * Dark theme: the neutral scale is inverted and light tints become translucent,
- * so every existing `bg-slate-*` / `text-slate-*` utility adapts automatically.
- */
+/* Night notebook: dark navy paper, same orange. */
 .dark {
   color-scheme: dark;
-  --color-surface: #111a2e;
-  --color-slate-50: #0a1020;
-  --color-slate-100: #1a2438;
-  --color-slate-200: #24304a;
-  --color-slate-300: #334160;
-  --color-slate-400: #64748b;
-  --color-slate-500: #94a3b8;
-  --color-slate-600: #b6c2d4;
-  --color-slate-700: #d5dde8;
-  --color-slate-800: #e8edf4;
-  --color-slate-900: #f4f7fb;
+  --color-surface: #1c2638;
+  --color-paper: #131b2a;
+  --color-rule: #1d2840;
+  --color-margin: #5b3a3a;
+  --color-ink: #e9edf4;
+  --color-highlight: #8a6a14;
+  --color-slate-50: #131b2a;
+  --color-slate-100: #222d42;
+  --color-slate-200: #2c3850;
+  --color-slate-300: #3a4763;
+  --color-slate-400: #6b7a93;
+  --color-slate-500: #98a4b8;
+  --color-slate-600: #b9c2d1;
+  --color-slate-700: #d6dce6;
+  --color-slate-800: #e7ebf1;
+  --color-slate-900: #f2f4f8;
   --color-slate-950: #ffffff;
 
-  --color-brand-50: rgb(99 102 241 / 0.14);
-  --color-brand-100: rgb(99 102 241 / 0.24);
+  --color-brand-50: rgb(226 104 60 / 0.14);
+  --color-brand-100: rgb(226 104 60 / 0.24);
   --color-emerald-50: rgb(16 185 129 / 0.14);
   --color-amber-50: rgb(245 158 11 / 0.14);
   --color-red-50: rgb(239 68 68 / 0.14);
@@ -72,7 +86,7 @@
   --color-purple-50: rgb(168 85 247 / 0.14);
 }
 
-/* Areas that are always dark by design (live room) keep the original palette. */
+/* Areas that are always dark by design keep the original palette. */
 .keep-colors {
   --color-slate-50: #f8fafc;
   --color-slate-100: #f1f5f9;
@@ -90,13 +104,14 @@
 
 @layer base {
   body {
-    @apply bg-slate-50 text-slate-800 antialiased transition-colors duration-300;
+    @apply bg-paper text-slate-800 antialiased transition-colors duration-300;
   }
   h1, h2, h3 {
     @apply text-slate-900;
+    letter-spacing: -0.01em;
   }
   ::selection {
-    @apply bg-brand-500 text-white;
+    @apply bg-highlight text-ink;
   }
   * {
     scrollbar-width: thin;
@@ -105,24 +120,43 @@
 }
 
 @layer components {
+  /* Ruled notebook paper */
+  .paper {
+    background-color: var(--color-paper);
+    background-image: linear-gradient(var(--color-rule) 1px, transparent 1px);
+    background-size: 100% 36px;
+    background-position: 0 18px;
+  }
+  /* Outlined card with an offset "sticker" shadow */
   .card {
-    @apply rounded-2xl border border-slate-200/80 bg-surface shadow-sm shadow-black/[0.03];
+    @apply rounded-2xl border-2 border-slate-900 bg-surface;
+    box-shadow: 4px 4px 0 var(--color-slate-900);
+  }
+  .dark .card {
+    border-color: var(--color-slate-300);
+    box-shadow: 4px 4px 0 #0a0f19;
   }
   .input {
-    @apply w-full rounded-lg border border-slate-300 bg-surface px-3 py-2 text-sm text-slate-900 outline-none transition
+    @apply w-full rounded-xl border-2 border-slate-300 bg-surface px-3 py-2 text-sm text-slate-900 outline-none transition
       placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-100 disabled:bg-slate-100;
   }
   .label {
-    @apply mb-1 block text-sm font-medium text-slate-700;
+    @apply mb-1 block text-sm font-bold text-slate-700;
+  }
+  .hand {
+    font-family: var(--font-hand);
+    @apply text-brand-500;
+  }
+  /* Highlighter underline for a word in a heading */
+  .highlight {
+    background: linear-gradient(transparent 62%, var(--color-highlight) 62%);
   }
   .text-gradient {
-    @apply bg-gradient-to-r from-brand-600 via-purple-500 to-pink-500 bg-clip-text text-transparent;
+    @apply text-brand-500;
   }
   .bg-grid {
-    background-image: linear-gradient(to right, var(--color-slate-200) 1px, transparent 1px),
-      linear-gradient(to bottom, var(--color-slate-200) 1px, transparent 1px);
-    background-size: 40px 40px;
-    mask-image: radial-gradient(ellipse at center, black 30%, transparent 75%);
+    background-image: linear-gradient(var(--color-rule) 1px, transparent 1px);
+    background-size: 100% 36px;
   }
 }
 

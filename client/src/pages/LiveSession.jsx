@@ -83,7 +83,7 @@ export default function LiveSession({ oneOnOne }) {
       <main className="mx-auto grid max-w-7xl gap-6 px-4 py-8 sm:px-8 lg:grid-cols-5">
         <div className="space-y-6 lg:col-span-3">
           <section className="card overflow-hidden">
-            <div className="flex flex-col items-center gap-3 bg-gradient-to-br from-brand-600 via-purple-600 to-fuchsia-600 px-6 py-10 text-center text-white">
+            <div className="flex flex-col items-center gap-3 border-b-2 border-slate-900 bg-brand-500 px-6 py-10 text-center text-white dark:border-slate-300">
               <span className="rounded-2xl bg-white/20 p-4 backdrop-blur"><Video className="size-9" /></span>
               <h2 className="text-2xl font-bold text-white">{info.title}</h2>
               <p className="flex items-center gap-1.5 text-white/85">

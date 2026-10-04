@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
-  Award, BookOpen, CalendarCheck, CalendarClock, CalendarDays, Flame, GraduationCap, LayoutDashboard, LogOut, Menu, Shield,
+  Award, BookOpen, CalendarCheck, CalendarClock, CalendarDays, Flame, LayoutDashboard, LogOut, Menu, Shield,
   Timer, UserRound, Users, X,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -63,10 +63,8 @@ const PAGE_TITLES = {
 
 export function Logo({ light }) {
   return (
-    <span className={cx('flex items-center gap-2 text-lg font-extrabold tracking-tight', light ? 'text-white' : 'text-slate-900')}>
-      <span className="rounded-xl bg-gradient-to-br from-brand-500 to-purple-600 p-1.5 shadow-lg shadow-brand-600/30">
-        <GraduationCap className="size-5 text-white" />
-      </span>
+    <span className={cx('flex items-center gap-2.5 text-xl font-extrabold tracking-tight', light ? 'text-white' : 'text-slate-900')}>
+      <span className="size-3.5 rounded-full bg-brand-500" />
       EduConnect
     </span>
   );
@@ -87,17 +85,17 @@ function StreakCard({ userId }) {
   const { today, goal, streak } = useStudyStats(userId);
   const pct = Math.min(100, Math.round((today / goal) * 100));
   return (
-    <button onClick={() => navigate('/focus')} className="mb-3 w-full rounded-2xl bg-gradient-to-br from-brand-600/60 to-purple-600/40 p-4 text-left ring-1 ring-white/10 transition hover:ring-white/25">
+    <button onClick={() => navigate('/focus')} className="card mb-3 w-full p-4 text-left transition hover:-translate-y-0.5">
       <div className="flex items-center justify-between">
-        <span className="flex items-center gap-1.5 text-sm font-semibold text-white">
-          <Flame className={cx('size-4', streak ? 'text-orange-400' : 'text-brand-200')} /> {streak} day streak
+        <span className="flex items-center gap-1.5 text-sm font-bold text-slate-900">
+          <Flame className={cx('size-4', streak ? 'text-brand-500' : 'text-slate-400')} /> {streak} day streak
         </span>
-        <span className="text-xs text-brand-200">{Math.round(today)}/{goal} min</span>
+        <span className="text-xs font-semibold text-slate-500">{Math.round(today)}/{goal} min</span>
       </div>
-      <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/15">
-        <div className="h-full rounded-full bg-gradient-to-r from-orange-400 to-pink-400 transition-all" style={{ width: `${pct}%` }} />
+      <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-100">
+        <div className="h-full rounded-full bg-brand-500 transition-all" style={{ width: `${pct}%` }} />
       </div>
-      <p className="mt-2 text-xs text-brand-200">{pct >= 100 ? 'Daily goal reached - amazing! 🎉' : 'Start a focus session →'}</p>
+      <p className="hand mt-1.5 text-lg leading-none">{pct >= 100 ? 'goal reached, well done!' : 'start a focus session →'}</p>
     </button>
   );
 }
@@ -114,13 +112,12 @@ export default function AppLayout() {
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
 
   const sidebar = (
-    <nav className="relative flex h-full flex-col overflow-hidden bg-brand-950 px-4 py-6">
-      <div className="pointer-events-none absolute -left-20 -top-20 size-64 rounded-full bg-brand-600/30 blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-24 -right-20 size-64 rounded-full bg-purple-600/20 blur-3xl" />
+    <nav className="relative flex h-full flex-col overflow-hidden border-r-2 border-slate-900 bg-surface py-6 pl-8 pr-4 dark:border-slate-300">
+      <div className="pointer-events-none absolute inset-y-0 left-4 w-0.5 bg-margin" />
 
       <div className="relative mb-6 flex items-center justify-between px-2">
-        <Logo light />
-        <button className="text-brand-200 lg:hidden" onClick={() => setOpen(false)} aria-label="Close menu">
+        <Logo />
+        <button className="text-slate-500 lg:hidden" onClick={() => setOpen(false)} aria-label="Close menu">
           <X className="size-5" />
         </button>
       </div>
@@ -128,7 +125,7 @@ export default function AppLayout() {
       <div className="relative flex-1 space-y-6 overflow-y-auto pr-1">
         {NAV[user.role].map(([group, items]) => (
           <div key={group}>
-            <p className="mb-2 px-3 text-[11px] font-semibold uppercase tracking-wider text-brand-300/60">{group}</p>
+            <p className="hand mb-1 px-3 text-xl leading-none">{group.toLowerCase()}</p>
             <ul className="space-y-1">
               {items.map(({ to, label, icon: Icon, badge }) => (
                 <li key={to}>
@@ -137,16 +134,16 @@ export default function AppLayout() {
                     onClick={() => setOpen(false)}
                     className={({ isActive }) =>
                       cx(
-                        'group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition',
+                        'group flex items-center gap-3 rounded-xl border-2 px-3 py-2 text-sm font-bold transition',
                         isActive
-                          ? 'bg-gradient-to-r from-brand-600 to-brand-500 text-white shadow-lg shadow-brand-900/50'
-                          : 'text-brand-200 hover:bg-white/5 hover:text-white'
+                          ? 'border-slate-900 bg-highlight text-ink shadow-[3px_3px_0_var(--color-slate-900)] dark:border-slate-300 dark:text-slate-900 dark:shadow-[3px_3px_0_#0a0f19]'
+                          : 'border-transparent text-slate-600 hover:bg-slate-100 hover:text-slate-900'
                       )
                     }
                   >
-                    <Icon className="size-5 transition group-hover:scale-110" />
+                    <Icon className="size-5" />
                     {label}
-                    {badge && <span className="ml-auto rounded-full bg-pink-500 px-1.5 py-0.5 text-[10px] font-bold text-white">{badge}</span>}
+                    {badge && <span className="ml-auto rounded-full bg-brand-500 px-1.5 py-0.5 text-[10px] font-bold text-white">{badge}</span>}
                   </NavLink>
                 </li>
               ))}
@@ -155,22 +152,22 @@ export default function AppLayout() {
         ))}
 
         {user.role !== 'admin' && (
-          <div className="rounded-2xl bg-white/5 p-4 ring-1 ring-white/10">
-            <p className="text-xs font-semibold uppercase tracking-wider text-brand-300/70">Thought of the day</p>
-            <p className="mt-2 text-sm italic leading-relaxed text-white/85">“{quote}”</p>
-            <p className="mt-1 text-xs text-brand-300/70">— {author}</p>
+          <div className="rounded-xl bg-paper p-4 dark:bg-slate-100">
+            <p className="hand text-xl leading-none">thought of the day</p>
+            <p className="mt-2 text-sm leading-relaxed text-slate-700">“{quote}”</p>
+            <p className="mt-1 text-xs text-slate-500">— {author}</p>
           </div>
         )}
       </div>
 
-      <div className="relative mt-4 border-t border-white/10 pt-4">
+      <div className="relative mt-4 border-t-2 border-dashed border-slate-200 pt-4">
         {user.role !== 'admin' && <StreakCard userId={user._id} />}
         <div className="flex items-center gap-3 rounded-xl px-2 py-2">
           <NavLink to="/profile" onClick={() => setOpen(false)} className="flex min-w-0 flex-1 items-center gap-3 rounded-lg hover:opacity-90">
             <Avatar user={user} />
             <div className="min-w-0">
-              <p className="truncate text-sm font-semibold text-white">{user.name}</p>
-              <p className="text-xs capitalize text-brand-300">{user.role} · View profile</p>
+              <p className="truncate text-sm font-bold text-slate-900">{user.name}</p>
+              <p className="text-xs capitalize text-slate-500">{user.role} · View profile</p>
             </div>
           </NavLink>
           <button
@@ -178,7 +175,7 @@ export default function AppLayout() {
               logout();
               navigate('/');
             }}
-            className="rounded-lg p-2 text-brand-200 hover:bg-white/10 hover:text-white"
+            className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-900"
             aria-label="Log out"
             title="Log out"
           >
@@ -190,7 +187,7 @@ export default function AppLayout() {
   );
 
   return (
-    <div className="min-h-screen lg:pl-72">
+    <div className="paper min-h-screen lg:pl-72">
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-72 lg:block">{sidebar}</aside>
       {open && (
         <div className="fixed inset-0 z-50 flex lg:hidden">
@@ -199,12 +196,12 @@ export default function AppLayout() {
         </div>
       )}
 
-      <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-slate-200 bg-surface/80 px-4 backdrop-blur-xl sm:px-8">
+      <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b-2 border-slate-900 bg-paper/90 px-4 backdrop-blur sm:px-8 dark:border-slate-300">
         <button className="rounded-lg p-2 text-slate-600 hover:bg-slate-100 lg:hidden" onClick={() => setOpen(true)} aria-label="Open menu">
           <Menu className="size-5" />
         </button>
         <div className="min-w-0">
-          <p className="truncate text-sm font-semibold text-slate-900">{title}</p>
+          <p className="truncate text-base font-extrabold text-slate-900">{title}</p>
           <p className="hidden truncate text-xs text-slate-500 sm:block">
             {greeting}, {user.name.split(' ')[0]} · {new Date().toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' })}
           </p>

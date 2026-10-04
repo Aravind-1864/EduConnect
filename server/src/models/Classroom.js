@@ -1,7 +1,8 @@
 import mongoose from 'mongoose';
 import { randomClassCode, uniqueCode } from '../utils/codes.js';
 
-const COLORS = ['#6366f1', '#16a34a', '#d97706', '#db2777', '#0891b2', '#7c3aed', '#dc2626'];
+// Notebook-friendly banner colours (all keep white text readable).
+const COLORS = ['#e2683c', '#23324a', '#2f7d62', '#3a6ea5', '#b5562f', '#5b6b2f', '#8a4f7d'];
 
 const classroomSchema = new mongoose.Schema(
   {

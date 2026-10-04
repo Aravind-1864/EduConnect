@@ -253,7 +253,7 @@ export default function Focus() {
               </select>
             </div>
             <div className="mt-4 h-3 overflow-hidden rounded-full bg-slate-100">
-              <div className="h-full rounded-full bg-gradient-to-r from-brand-500 via-purple-500 to-pink-500 transition-all" style={{ width: `${goalPct}%` }} />
+              <div className="h-full rounded-full bg-brand-500 transition-all" style={{ width: `${goalPct}%` }} />
             </div>
             <p className="mt-2 text-sm text-slate-500">{goalPct >= 100 ? 'Goal smashed! 🎉 Keep the streak alive tomorrow.' : `${goalPct}% done - you've got this!`}</p>
           </SectionCard>
