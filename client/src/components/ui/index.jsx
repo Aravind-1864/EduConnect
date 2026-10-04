@@ -18,7 +18,7 @@ export function Button({ variant = 'primary', size = 'md', loading, icon: Icon, 
   return (
     <button
       className={cx(
-        'inline-flex items-center justify-center gap-2 rounded-xl font-bold transition active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60',
+        'inline-flex items-center justify-center gap-2 rounded-xl font-bold transition hover:-translate-y-px active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0',
         VARIANTS[variant],
         SIZES[size],
         className
@@ -197,7 +197,7 @@ export function StatCard({ label, value, icon: Icon, tone = 'brand' }) {
     pink: 'bg-pink-50 text-pink-600',
   };
   return (
-    <div className="card flex items-center gap-4 p-5">
+    <div className="card card-hover flex items-center gap-4 p-5">
       <div className={cx('rounded-xl p-3', tones[tone])}>
         <Icon className="size-6" />
       </div>

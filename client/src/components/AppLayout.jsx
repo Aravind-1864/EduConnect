@@ -85,7 +85,7 @@ function StreakCard({ userId }) {
   const { today, goal, streak } = useStudyStats(userId);
   const pct = Math.min(100, Math.round((today / goal) * 100));
   return (
-    <button onClick={() => navigate('/focus')} className="card mb-3 w-full p-4 text-left transition hover:-translate-y-0.5">
+    <button onClick={() => navigate('/focus')} className="card mb-3 w-full p-4 text-left">
       <div className="flex items-center justify-between">
         <span className="flex items-center gap-1.5 text-sm font-bold text-slate-900">
           <Flame className={cx('size-4', streak ? 'text-brand-500' : 'text-slate-400')} /> {streak} day streak

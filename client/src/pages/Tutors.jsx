@@ -27,7 +27,7 @@ export const DemoBadge = () => (
 
 function TutorCard({ t }) {
   return (
-    <Link to={`/tutors/${t._id}`} className="card flex flex-col p-6 transition hover:-translate-y-0.5 hover:shadow-md">
+    <Link to={`/tutors/${t._id}`} className="card flex flex-col p-6">
       <div className="flex items-center gap-4">
         <Avatar user={t} size="lg" />
         <div className="min-w-0">
@@ -110,7 +110,7 @@ function SuggestedTutors() {
         ))}
       </div>
       {shown.length ? (
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{shown.map((t) => <TutorCard key={t._id} t={t} />)}</div>
+        <div className="stagger grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{shown.map((t) => <TutorCard key={t._id} t={t} />)}</div>
       ) : (
         <EmptyState icon={Users} title="No tutors for this subject yet" text="Try another subject or search above." />
       )}
@@ -123,7 +123,7 @@ function SearchResults({ query }) {
   if (loading && !tutors) return <Spinner />;
   if (error) return <ErrorState message={error} onRetry={reload} />;
   return tutors.length ? (
-    <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{tutors.map((t) => <TutorCard key={t._id} t={t} />)}</div>
+    <div className="stagger grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{tutors.map((t) => <TutorCard key={t._id} t={t} />)}</div>
   ) : (
     <EmptyState icon={Users} title="No tutors found" text="Try a different subject or name." />
   );

@@ -112,7 +112,7 @@ export default function Classes() {
       ) : error ? (
         <ErrorState message={error} onRetry={reload} />
       ) : data.length ? (
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{data.map((c) => <ClassCard key={c._id} c={c} />)}</div>
+        <div className="stagger grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{data.map((c) => <ClassCard key={c._id} c={c} />)}</div>
       ) : (
         <EmptyState icon={BookOpen} title="No classrooms yet" text={user.role === 'student' ? 'Join a classroom with the 5-digit code from your tutor.' : 'Create your first classroom, like 6th - A.'} action={action} />
       )}

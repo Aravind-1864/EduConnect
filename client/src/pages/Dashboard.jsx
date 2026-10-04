@@ -103,7 +103,7 @@ function StudentDashboard({ data }) {
   const { stats } = data;
   return (
     <>
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="stagger grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard label="Enrolled classes" value={stats.classes} icon={BookOpen} />
         <StatCard label="Pending assignments" value={stats.pendingAssignments} icon={ClipboardList} tone="amber" />
         <StatCard label="Upcoming sessions" value={stats.upcomingSessions} icon={Video} tone="green" />
@@ -163,7 +163,7 @@ function TutorDashboard({ data }) {
   const { stats } = data;
   return (
     <>
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="stagger grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard label="Active classes" value={stats.classes} icon={BookOpen} />
         <StatCard label="Total students" value={stats.students} icon={Users} tone="green" />
         <StatCard label="Waiting to grade" value={stats.toGrade} icon={ClipboardList} tone="amber" />
@@ -271,7 +271,7 @@ export default function Dashboard() {
           <Link to="/classes" className="text-sm font-medium text-brand-600">View all</Link>
         </div>
         {data.classes.length ? (
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="stagger grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {data.classes.slice(0, 6).map((c) => <ClassCard key={c._id} c={c} />)}
           </div>
         ) : (

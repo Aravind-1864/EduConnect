@@ -5,7 +5,7 @@ import { fmtDateTime } from '../utils/format';
 
 export function ClassCard({ c }) {
   return (
-    <Link to={`/classes/${c._id}`} className="card group overflow-hidden transition hover:-translate-y-0.5 hover:shadow-md">
+    <Link to={`/classes/${c._id}`} className="card group overflow-hidden">
       <div className="relative h-24 p-5" style={{ background: c.color }}>
         <p className="text-lg font-bold text-white drop-shadow-sm">{c.title}</p>
         <p className="text-sm text-white/85">{c.subject}</p>
@@ -30,7 +30,7 @@ export const SESSION_STATUS = {
 export function SessionRow({ session, classroom, action }) {
   const [color, label] = SESSION_STATUS[session.status];
   return (
-    <div className="flex flex-wrap items-center gap-x-4 gap-y-3 rounded-xl border-2 border-slate-200 bg-surface p-4">
+    <div className="flex flex-wrap items-center gap-x-4 gap-y-3 rounded-xl border-2 border-slate-200 bg-surface p-4 transition hover:border-brand-300">
       <div className="rounded-xl p-3" style={{ background: `${classroom?.color ?? '#6366f1'}1a` }}>
         <Video className="size-5" style={{ color: classroom?.color ?? '#6366f1' }} />
       </div>

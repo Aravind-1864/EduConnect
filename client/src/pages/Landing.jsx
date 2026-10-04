@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { CalendarClock, CheckCircle2, ClipboardCheck, KeyRound, MessagesSquare, Timer, Users } from 'lucide-react';
 import { Logo } from '../components/AppLayout';
 import { ThemeToggle } from '../components/HeaderWidgets';
+import { useReveal } from '../hooks/useReveal';
 
 const STEPS = [
   ['Create a classroom', 'Name it “6th – A”. A five-digit code is made for you.'],
@@ -22,10 +23,6 @@ const STUDENTS = [
   [Timer, 'Focus timer and streaks', 'Study in short focused sprints and keep a daily streak going.'],
 ];
 
-function StickyCard({ className, children }) {
-  return <div className={`card absolute p-6 ${className}`}>{children}</div>;
-}
-
 function FeatureList({ items }) {
   return (
     <ul className="space-y-5">
@@ -45,6 +42,7 @@ function FeatureList({ items }) {
 }
 
 export default function Landing() {
+  useReveal();
   return (
     <div className="paper relative min-h-screen overflow-x-hidden">
       <div className="pointer-events-none absolute inset-y-0 left-6 w-0.5 bg-margin sm:left-12 lg:left-[max(1.5rem,calc(50%-37rem))]" />
@@ -87,41 +85,28 @@ export default function Landing() {
             <p className="mt-6 text-base text-slate-600">Free to use · Works in any browser, on phone or laptop</p>
           </div>
 
-          <div className="relative hidden h-[460px] sm:block" aria-hidden="true">
-            <StickyCard className="left-2 top-2 w-[22rem] -rotate-3">
-              <span className="absolute -top-3 left-1/2 h-6 w-24 -translate-x-1/2 rotate-2 rounded-sm bg-highlight/70 shadow-sm" />
-              <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Classroom · 6th – A</p>
-              <p className="mt-1 font-mono text-5xl font-bold tracking-[0.2em] text-slate-900">48213</p>
-              <p className="mt-1 text-base text-slate-600">Share this code with your class.</p>
-            </StickyCard>
-            <StickyCard className="right-0 top-36 w-80 rotate-[2.5deg]">
-              <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Class meet started</p>
-              <p className="mt-1 text-xl font-extrabold text-slate-900">Motion in a plane</p>
-              <p className="mt-1 text-base text-slate-600">
-                Meet code <b className="font-mono tracking-widest text-slate-900">K7P3QX</b>
-              </p>
-              <p className="mt-3 flex items-center gap-1.5 text-sm font-bold text-emerald-700 dark:text-emerald-300">
-                <CheckCircle2 className="size-4" /> Attendance recorded
-              </p>
-            </StickyCard>
-            <StickyCard className="bottom-0 left-12 w-[21rem] -rotate-1 !bg-highlight dark:!text-ink">
-              <p className="text-xs font-bold uppercase tracking-wider text-ink/60">Assignment graded</p>
-              <p className="mt-1 text-xl font-extrabold text-ink">Algebra worksheet · 18/20</p>
-              <p className="hand mt-1 text-2xl leading-tight !text-ink">“Great work! Recheck step 4.”</p>
-            </StickyCard>
-            <svg className="absolute left-0 top-[11.5rem] h-20 w-24 text-brand-500" viewBox="0 0 120 100" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round">
-              <path d="M8 88 C 30 40, 70 70, 96 22" />
-              <path d="M82 22 L 97 20 L 96 36" />
-            </svg>
-            <span className="hand absolute left-1 top-[16.5rem] -rotate-6 text-2xl">share it!</span>
+          <div className="group relative animate-fade-up [animation-delay:150ms]">
+            <span className="hand absolute -top-9 right-4 z-10 rotate-3 text-3xl">live class, in your browser</span>
+            {/* Light illustration with its own paper texture: framed like a pasted-in photo, left margin cropped. */}
+            <div className="card relative overflow-hidden rotate-[1.5deg] transition duration-500 ease-out group-hover:rotate-0 group-hover:-translate-y-1 motion-safe:animate-float">
+              <img
+                src="/hero-classroom.webp"
+                alt="EduConnect live class: the teacher on video, a shared whiteboard with a triangle, students joining, and Chat, Assignments and Live Tutoring panels"
+                width="1536"
+                height="1024"
+                className="block aspect-[1430/1024] w-full origin-[58%_52%] scale-[1.18] object-cover object-right dark:brightness-[0.92]"
+                fetchPriority="high"
+              />
+            </div>
+            <span className="absolute -bottom-3 left-10 h-6 w-28 -rotate-3 rounded-sm bg-highlight/70 shadow-sm" aria-hidden="true" />
           </div>
         </section>
 
-        <section id="how" className="scroll-mt-10 pb-24">
+        <section id="how" data-reveal className="scroll-mt-10 pb-24">
           <span className="hand text-3xl">how it works</span>
           <div className="mt-4 grid gap-6 md:grid-cols-3">
             {STEPS.map(([title, text], i) => (
-              <div key={title} className="card p-6">
+              <div key={title} className="card card-hover p-6">
                 <p className="hand text-4xl leading-none">{i + 1}.</p>
                 <h3 className="mt-2 text-xl font-extrabold">{title}</h3>
                 <p className="mt-2 text-[17px] leading-relaxed text-slate-600">{text}</p>
@@ -130,20 +115,20 @@ export default function Landing() {
           </div>
         </section>
 
-        <section className="grid gap-12 pb-24 lg:grid-cols-2">
-          <div id="teachers" className="card scroll-mt-10 p-8">
+        <section data-reveal className="grid gap-12 pb-24 lg:grid-cols-2">
+          <div id="teachers" className="card card-hover scroll-mt-10 p-8">
             <span className="hand text-3xl">for teachers</span>
             <h2 className="mb-6 mt-1 text-3xl font-black">Less admin, more teaching.</h2>
             <FeatureList items={TEACHERS} />
           </div>
-          <div id="students" className="card scroll-mt-10 p-8">
+          <div id="students" className="card card-hover scroll-mt-10 p-8">
             <span className="hand text-3xl">for students</span>
             <h2 className="mb-6 mt-1 text-3xl font-black">Everything for class, in one tab.</h2>
             <FeatureList items={STUDENTS} />
           </div>
         </section>
 
-        <section className="pb-24">
+        <section data-reveal className="pb-24">
           <div className="card flex flex-col items-start gap-6 p-8 sm:p-12 md:flex-row md:items-center md:justify-between">
             <div>
               <h2 className="text-3xl font-black sm:text-4xl">
