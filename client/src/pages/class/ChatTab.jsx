@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { MessagesSquare, Send } from 'lucide-react';
 import { useFetch } from '../../hooks/useFetch';
 import { useSocket } from '../../context/SocketContext';
@@ -8,17 +9,31 @@ import { fmtTime } from '../../utils/format';
 
 const URL_RE = /(https?:\/\/[^\s]+)/g;
 
-/** Renders message text with http(s) links made clickable (opened in a new tab). */
+/** Path of a link to a class meet on this site (any host, so dev/prod links both work), else null. */
+const meetPath = (url) => {
+  try {
+    const { pathname } = new URL(url);
+    return /^\/live\/[a-f0-9]{24}\/[a-f0-9]{24}$/.test(pathname) ? pathname : null;
+  } catch {
+    return null;
+  }
+};
+
+/** Renders message text with links clickable; class meet links show as a short "Open class meet". */
 function Linkified({ text }) {
-  return text.split(URL_RE).map((part, i) =>
-    i % 2 ? (
+  return text.split(URL_RE).map((part, i) => {
+    if (i % 2 === 0) return part;
+    const path = meetPath(part);
+    return path ? (
+      <Link key={i} to={path} className="font-semibold underline underline-offset-2">
+        Open class meet
+      </Link>
+    ) : (
       <a key={i} href={part} target="_blank" rel="noreferrer" className="break-all font-medium underline underline-offset-2">
         {part}
       </a>
-    ) : (
-      part
-    )
-  );
+    );
+  });
 }
 
 /** Real-time class chat. Also used inside the live session sidebar (compact). */
