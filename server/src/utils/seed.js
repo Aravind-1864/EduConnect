@@ -36,15 +36,15 @@ export async function seedDemoData() {
   const ids = (list) => list.map((s) => s._id);
 
   const math = await Classroom.create({
-    title: 'Mathematics - Grade 10', subject: 'Mathematics', tutor: kumar._id, students: ids(students), code: 'MATH10', color: '#6366f1',
+    title: 'Mathematics - Grade 10', subject: 'Mathematics', tutor: kumar._id, students: ids(students), code: '10101', color: '#6366f1',
     description: 'Full CBSE Grade 10 syllabus: real numbers, polynomials, quadratic equations, trigonometry and statistics.',
   });
   const physics = await Classroom.create({
-    title: 'Physics Fundamentals', subject: 'Physics', tutor: rao._id, students: ids(students.slice(0, 4)), code: 'PHY101', color: '#16a34a',
+    title: 'Physics Fundamentals', subject: 'Physics', tutor: rao._id, students: ids(students.slice(0, 4)), code: '20202', color: '#16a34a',
     description: 'Motion, force, work & energy, and light - with weekly hands-on demos.',
   });
   const english = await Classroom.create({
-    title: 'English Writing Workshop', subject: 'English', tutor: thomas._id, students: ids([anu, others[1], others[3]]), code: 'ENG200', color: '#d97706',
+    title: 'English Writing Workshop', subject: 'English', tutor: thomas._id, students: ids([anu, others[1], others[3]]), code: '30303', color: '#d97706',
     description: 'Learn to write clear essays, letters and reports.',
   });
 

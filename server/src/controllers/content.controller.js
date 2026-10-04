@@ -1,10 +1,11 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { Material, Session, Assignment, Submission } from '../models/index.js';
+import { Material, Session, Assignment, Submission, Classroom } from '../models/index.js';
 import { ApiError, asyncHandler, requireFields } from '../utils/ApiError.js';
 import { publicUrl, UPLOAD_DIR } from '../middleware/upload.js';
 import { resolveMeetUrl } from '../utils/googleMeet.js';
-import { liveNowMessage, postClassMessage } from '../utils/chat.js';
+import { meetStartedMessage, newMeetMessage, postClassMessage, siteUrl } from '../utils/chat.js';
+import { cleanMeetCode, MEET_CODE_RE } from '../utils/codes.js';
 
 const PEOPLE = 'name email avatarColor';
 
@@ -65,6 +66,8 @@ export const createSession = asyncHandler(async (req, res) => {
     createdBy: req.user._id,
   });
   req.app.get('io')?.to(`class:${req.classroom._id}`).emit('session:new', session);
+  // Share the meet code with everyone in the classroom.
+  await postClassMessage(req.app, req.classroom._id, req.user._id, newMeetMessage(session, siteUrl(req)));
   res.status(201).json(session);
 });
 
@@ -79,7 +82,6 @@ export const updateSession = asyncHandler(async (req, res) => {
     session.meetUrl = meetUrl || undefined;
     session.meetCreatedByApi = byApi;
   }
-  if (session.status === 'live' && !session.meetUrl) throw ApiError.badRequest('Add a Google Meet link before going live');
   await session.save();
   req.app.get('io')?.to(`class:${req.classroom._id}`).emit('session:updated', session);
   res.json(session);
@@ -91,31 +93,53 @@ export const deleteSession = asyncHandler(async (req, res) => {
 });
 
 /**
- * Returns the session (with its Google Meet link) and records attendance.
- * The tutor opening a scheduled session that has a link starts it; students can only join live sessions.
+ * Opens a class meet and records attendance. The tutor opening a scheduled meet starts it
+ * (and the classroom is told); students can join once it has started.
  */
 export const joinSession = asyncHandler(async (req, res) => {
-  const session = await Session.findOne({ _id: req.params.id, classroom: req.classroom._id }).populate('classroom', 'title subject');
-  if (!session) throw ApiError.notFound('Session not found');
-  if (['ended', 'cancelled'].includes(session.status)) throw ApiError.badRequest(`This session has ${session.status}`);
+  const session = await Session.findOne({ _id: req.params.id, classroom: req.classroom._id });
+  if (!session) throw ApiError.notFound('Class meet not found');
+  res.json(await enterMeet(req, session, req.isClassTutor));
+});
 
-  // A class link added after scheduling still applies to sessions without their own.
-  if (!session.meetUrl && req.classroom.meetUrl) session.meetUrl = req.classroom.meetUrl;
+/** Student enters a meet code shared in their classroom. Returns where to go. */
+export const joinMeetByCode = asyncHandler(async (req, res) => {
+  const code = cleanMeetCode(req.body.code);
+  if (!MEET_CODE_RE.test(code)) throw ApiError.badRequest('Enter the 6-character meet code (letters and numbers)');
+  const session = await Session.findOne({ code });
+  if (!session) throw ApiError.notFound('No class meet found with that code');
+  const classroom = await Classroom.findById(session.classroom);
+  const isAdmin = req.user.role === 'admin';
+  if (!classroom || (!isAdmin && !classroom.hasMember(req.user._id))) {
+    throw ApiError.forbidden('This meet belongs to a classroom you have not joined. Join the classroom first with its 5-digit code.');
+  }
+  req.classroom = classroom;
+  const isTutor = isAdmin || String(classroom.tutor) === String(req.user._id);
+  await enterMeet(req, session, isTutor);
+  res.json({ classId: String(classroom._id), sessionId: String(session._id) });
+});
 
-  let wentLive = false;
-  if (req.isClassTutor && session.status === 'scheduled' && session.meetUrl) {
+async function enterMeet(req, session, isTutor) {
+  if (session.status === 'cancelled') throw ApiError.badRequest('This class meet was cancelled');
+  if (session.status === 'ended' && !isTutor) throw ApiError.badRequest('This class meet has already ended');
+
+  let started = false;
+  if (isTutor && session.status === 'scheduled') {
     session.status = 'live';
-    wentLive = true;
-    req.app.get('io')?.to(`class:${req.classroom._id}`).emit('session:updated', session);
-  } else if (!req.isClassTutor && session.status !== 'live') {
-    throw ApiError.badRequest('The tutor has not started this session yet');
+    started = true;
+  } else if (!isTutor && session.status !== 'live') {
+    throw ApiError.badRequest('The tutor has not started this class meet yet');
   }
 
   if (!session.attendees.some((a) => String(a) === String(req.user._id))) session.attendees.push(req.user._id);
   await session.save();
-  if (wentLive) await postClassMessage(req.app, req.classroom._id, req.user._id, liveNowMessage(session.title, session.meetUrl));
-  res.json({ session, isTutor: req.isClassTutor });
-});
+  await session.populate('attendees', 'name avatarColor role');
+
+  const io = req.app.get('io');
+  io?.to(`class:${session.classroom}`).emit('session:updated', session);
+  if (started) await postClassMessage(req.app, session.classroom, req.user._id, meetStartedMessage(session, siteUrl(req)));
+  return { session, isTutor };
+}
 
 /* ---------------------------- Assignments ---------------------------- */
 

@@ -1,68 +1,61 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { ArrowLeft, Clock, Copy, ExternalLink, PhoneOff, Video } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, Clock, Copy, PhoneOff, Users, Video } from 'lucide-react';
 import { api, errorMessage } from '../api/client';
-import { Badge, Button, SectionCard, Spinner } from '../components/ui';
-import { AddMeetLink } from '../components/MeetLinkForm';
+import { useSocket } from '../context/SocketContext';
+import { Avatar, Badge, Button, SectionCard, Spinner } from '../components/ui';
 import { SESSION_STATUS } from '../components/shared';
 import { fmtDateTime } from '../utils/format';
 import ChatTab from './class/ChatTab';
 
 /**
- * "Class room" page for a live session (/live/:classId/:sessionId) or a 1-on-1 booking (/meet/:bookingId).
- * Video runs in Google Meet (it cannot be embedded), so this page hands off to Meet in a new tab
- * and keeps the EduConnect class chat open alongside.
+ * Class meet page (/live/:classId/:sessionId). Opening it as the tutor starts the meet;
+ * students arrive here after entering the meet code. Attendance is recorded on entry.
+ * (Video calling is paused for now; the classroom chat is the live channel.)
  */
 export default function LiveSession({ oneOnOne }) {
-  const { classId, sessionId, bookingId } = useParams();
+  const { classId, sessionId } = useParams();
   const navigate = useNavigate();
+  const socket = useSocket();
   const [info, setInfo] = useState(null);
   const [classroom, setClassroom] = useState(null);
-  const [saving, setSaving] = useState(false);
   const backTo = oneOnOne ? '/bookings' : `/classes/${classId}?tab=sessions`;
 
   const load = useCallback(async () => {
+    if (oneOnOne) {
+      toast('Video calls for 1-on-1 sessions are coming soon');
+      navigate('/bookings', { replace: true });
+      return;
+    }
     try {
-      if (oneOnOne) {
-        const { data } = await api.get(`/bookings/${bookingId}/join`);
-        const other = data.isTutor ? data.booking.student : data.booking.tutor;
-        setInfo({ isTutor: data.isTutor, title: `${data.booking.subject} · 1-on-1 with ${other.name}`, meetUrl: data.booking.meetUrl, startsAt: data.booking.startsAt, status: 'confirmed' });
-      } else {
-        const [s, c] = await Promise.all([api.post(`/classes/${classId}/sessions/${sessionId}/join`), api.get(`/classes/${classId}`)]);
-        const { session } = s.data;
-        setInfo({ isTutor: s.data.isTutor, title: session.title, meetUrl: session.meetUrl, startsAt: session.startsAt, status: session.status, durationMinutes: session.durationMinutes });
-        setClassroom(c.data);
-      }
+      const [s, c] = await Promise.all([api.post(`/classes/${classId}/sessions/${sessionId}/join`), api.get(`/classes/${classId}`)]);
+      setInfo({ ...s.data.session, isTutor: s.data.isTutor });
+      setClassroom(c.data);
     } catch (err) {
       toast.error(errorMessage(err));
       navigate(backTo, { replace: true });
     }
-  }, [oneOnOne, bookingId, classId, sessionId]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [oneOnOne, classId, sessionId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     load();
   }, [load]);
 
-  const saveLink = async (value) => {
-    setSaving(true);
-    try {
-      if (oneOnOne) await api.patch(`/bookings/${bookingId}/meet`, value);
-      else await api.patch(`/classes/${classId}/sessions/${sessionId}`, value);
-      toast.success('Meeting link saved');
-      await load(); // re-join: a tutor's session goes live once it has a link
-    } catch (err) {
-      toast.error(errorMessage(err));
-    } finally {
-      setSaving(false);
-    }
-  };
+  // Live attendee list / status changes.
+  useEffect(() => {
+    if (!socket) return undefined;
+    socket.emit('class:join', classId);
+    const onUpdate = (s) => s._id === sessionId && setInfo((prev) => (prev ? { ...prev, ...s } : prev));
+    socket.on('session:updated', onUpdate);
+    return () => socket.off('session:updated', onUpdate);
+  }, [socket, classId, sessionId]);
 
-  const endForEveryone = async () => {
-    if (!window.confirm('End this session for everyone? (Also end the call in Google Meet.)')) return;
+  const endMeet = async () => {
+    if (!window.confirm('End this class meet for everyone?')) return;
     try {
       await api.patch(`/classes/${classId}/sessions/${sessionId}`, { status: 'ended' });
-      toast.success('Session ended');
+      toast.success('Class meet ended');
       navigate(backTo);
     } catch (err) {
       toast.error(errorMessage(err));
@@ -71,13 +64,14 @@ export default function LiveSession({ oneOnOne }) {
 
   if (!info) return <Spinner className="min-h-screen" />;
 
-  const [color, label] = oneOnOne ? ['green', 'Confirmed'] : SESSION_STATUS[info.status];
+  const [color, label] = SESSION_STATUS[info.status];
+  const attendees = (info.attendees ?? []).filter((a) => typeof a === 'object');
 
   return (
     <div className="min-h-screen bg-slate-50">
       <header className="flex items-center gap-3 border-b border-slate-200 bg-surface px-4 py-3 sm:px-8">
         <Link to={backTo} className="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-800">
-          <ArrowLeft className="size-4" /> Back
+          <ArrowLeft className="size-4" /> {classroom?.title ?? 'Back'}
         </Link>
         <h1 className="truncate text-base font-semibold">{info.title}</h1>
         <Badge color={color}>
@@ -89,66 +83,66 @@ export default function LiveSession({ oneOnOne }) {
       <main className="mx-auto grid max-w-7xl gap-6 px-4 py-8 sm:px-8 lg:grid-cols-5">
         <div className="space-y-6 lg:col-span-3">
           <section className="card overflow-hidden">
-            <div className="flex flex-col items-center gap-4 bg-gradient-to-br from-emerald-500 via-teal-500 to-sky-500 px-6 py-12 text-center text-white">
-              <span className="rounded-2xl bg-white/20 p-4 backdrop-blur"><Video className="size-10" /></span>
+            <div className="flex flex-col items-center gap-3 bg-gradient-to-br from-brand-600 via-purple-600 to-fuchsia-600 px-6 py-10 text-center text-white">
+              <span className="rounded-2xl bg-white/20 p-4 backdrop-blur"><Video className="size-9" /></span>
               <h2 className="text-2xl font-bold text-white">{info.title}</h2>
               <p className="flex items-center gap-1.5 text-white/85">
-                <Clock className="size-4" /> {fmtDateTime(info.startsAt)}
-                {info.durationMinutes ? ` · ${info.durationMinutes} min` : ''}
+                <Clock className="size-4" /> {fmtDateTime(info.startsAt)} · {info.durationMinutes} min
               </p>
+              <div className="mt-2 rounded-xl bg-white/15 px-5 py-2 backdrop-blur">
+                <p className="text-xs uppercase tracking-wider text-white/75">Meet code</p>
+                <button
+                  className="flex items-center gap-2 font-mono text-3xl font-bold tracking-[0.3em]"
+                  onClick={() => {
+                    navigator.clipboard.writeText(info.code);
+                    toast.success('Meet code copied');
+                  }}
+                  title="Copy code"
+                >
+                  {info.code} <Copy className="size-5 opacity-80" />
+                </button>
+              </div>
             </div>
 
             <div className="space-y-4 p-6">
-              {info.meetUrl ? (
-                <>
-                  <a
-                    href={info.meetUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-6 py-4 text-lg font-semibold text-white shadow-lg shadow-emerald-600/25 transition hover:bg-emerald-700"
-                  >
-                    <Video className="size-5" /> Join on Google Meet <ExternalLink className="size-4" />
-                  </a>
-                  <div className="flex items-center gap-2 rounded-lg bg-slate-100 px-3 py-2 text-sm">
-                    <span className="truncate font-mono text-slate-600">{info.meetUrl}</span>
-                    <button
-                      className="ml-auto shrink-0 rounded p-1 text-slate-500 hover:bg-slate-200 hover:text-slate-800"
-                      onClick={() => {
-                        navigator.clipboard.writeText(info.meetUrl);
-                        toast.success('Link copied');
-                      }}
-                      aria-label="Copy link"
-                    >
-                      <Copy className="size-4" />
-                    </button>
-                  </div>
-                  <p className="text-sm text-slate-500">Google Meet opens in a new tab. Keep this tab open for the class chat.</p>
-                </>
-              ) : info.isTutor ? (
-                <>
-                  <p className="text-sm text-slate-600">Add a Google Meet link to start this {oneOnOne ? 'session' : 'class'}. Students can join as soon as it's saved.</p>
-                  <AddMeetLink onSave={saveLink} saving={saving} />
-                </>
+              {info.isTutor ? (
+                info.status === 'live' ? (
+                  <>
+                    <p className="flex items-center gap-2 font-medium text-emerald-700 dark:text-emerald-300">
+                      <CheckCircle2 className="size-5" /> Your class meet is live. Students join with the code shared in the classroom chat.
+                    </p>
+                    <Button variant="danger" icon={PhoneOff} className="w-full" onClick={endMeet}>End class meet</Button>
+                  </>
+                ) : (
+                  <p className="text-slate-600">This class meet has ended.</p>
+                )
               ) : (
-                <p className="rounded-lg bg-amber-50 p-4 text-sm text-amber-700 dark:text-amber-300">The tutor hasn't added the Google Meet link yet. You'll get a notification when it's ready.</p>
+                <p className="flex items-center gap-2 rounded-lg bg-emerald-50 p-4 font-medium text-emerald-700 dark:text-emerald-300">
+                  <CheckCircle2 className="size-5" /> You've joined this class meet. Your attendance is recorded.
+                </p>
               )}
-
-              {info.isTutor && !oneOnOne && info.status === 'live' && (
-                <Button variant="danger" icon={PhoneOff} className="w-full" onClick={endForEveryone}>End session for everyone</Button>
-              )}
+              <p className="text-sm text-slate-500">Video calling will be added here soon. For now, use the classroom chat to talk with everyone.</p>
             </div>
           </section>
 
-          {info.isTutor && info.meetUrl && (
-            <SectionCard title="Change meeting link">
-              <AddMeetLink onSave={saveLink} saving={saving} />
-            </SectionCard>
-          )}
+          <SectionCard title={`Joined (${attendees.length})`} action={<Users className="size-5 text-slate-400" />}>
+            {attendees.length ? (
+              <ul className="flex flex-wrap gap-3">
+                {attendees.map((a) => (
+                  <li key={a._id} className="flex items-center gap-2 rounded-full bg-slate-100 py-1 pl-1 pr-3 text-sm">
+                    <Avatar user={a} size="sm" /> {a.name}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-slate-500">No one has joined yet.</p>
+            )}
+          </SectionCard>
         </div>
 
         {classroom && (
           <div className="lg:col-span-2">
-            <h2 className="mb-3 font-semibold">Class chat</h2>
+            <h2 className="mb-3 font-semibold">Classroom chat</h2>
             <ChatTab classroom={classroom} />
           </div>
         )}

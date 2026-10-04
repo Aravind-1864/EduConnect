@@ -11,6 +11,8 @@ export const env = {
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || '7d',
   clientUrl: process.env.CLIENT_URL || 'http://localhost:5173',
   isProd: process.env.NODE_ENV === 'production',
+  // Time zone used when the server writes times into chat messages.
+  timeZone: process.env.APP_TIMEZONE || 'Asia/Kolkata',
   // Optional: lets tutors connect Google so Meet links are created automatically.
   google: {
     clientId: process.env.GOOGLE_CLIENT_ID || '',

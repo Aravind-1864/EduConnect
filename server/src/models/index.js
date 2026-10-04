@@ -2,28 +2,32 @@ import mongoose from 'mongoose';
 
 export { User, ROLES } from './User.js';
 export { Classroom } from './Classroom.js';
+import { randomMeetCode, uniqueCode } from '../utils/codes.js';
 
 const { Schema, model } = mongoose;
 const ref = (name, required = true) => ({ type: Schema.Types.ObjectId, ref: name, required });
 
-export const Session = model(
-  'Session',
-  new Schema(
-    {
-      classroom: ref('Classroom'),
-      title: { type: String, required: true, trim: true },
-      description: { type: String, default: '' },
-      startsAt: { type: Date, required: true },
-      durationMinutes: { type: Number, default: 60, min: 5, max: 600 },
-      meetUrl: { type: String, trim: true },
-      meetCreatedByApi: { type: Boolean, default: false },
-      status: { type: String, enum: ['scheduled', 'live', 'ended', 'cancelled'], default: 'scheduled' },
-      attendees: [ref('User', false)],
-      createdBy: ref('User'),
-    },
-    { timestamps: true }
-  )
+const sessionSchema = new Schema(
+  {
+    classroom: ref('Classroom'),
+    title: { type: String, required: true, trim: true },
+    description: { type: String, default: '' },
+    startsAt: { type: Date, required: true },
+    durationMinutes: { type: Number, default: 60, min: 5, max: 600 },
+    // 6-character letters+digits code, shared in the classroom; students enter it to join.
+    code: { type: String, unique: true, sparse: true },
+    meetUrl: { type: String, trim: true },
+    meetCreatedByApi: { type: Boolean, default: false },
+    status: { type: String, enum: ['scheduled', 'live', 'ended', 'cancelled'], default: 'scheduled' },
+    attendees: [ref('User', false)],
+    createdBy: ref('User'),
+  },
+  { timestamps: true }
 );
+sessionSchema.pre('validate', async function assignCode() {
+  if (!this.code) this.code = await uniqueCode(randomMeetCode, (code) => this.constructor.exists({ code }));
+});
+export const Session = model('Session', sessionSchema);
 
 export const Material = model(
   'Material',

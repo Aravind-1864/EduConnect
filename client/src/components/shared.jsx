@@ -41,6 +41,11 @@ export function SessionRow({ session, classroom, action }) {
           {fmtDateTime(session.startsAt)} · {session.durationMinutes} min
         </p>
       </div>
+      {session.code && (
+        <span className="rounded-lg bg-slate-100 px-2.5 py-1 font-mono text-sm font-semibold tracking-widest text-slate-700" title="Meet code">
+          {session.code}
+        </span>
+      )}
       <Badge color={color}>
         {session.status === 'live' && <span className="size-1.5 animate-pulse rounded-full bg-red-500" />}
         {label}

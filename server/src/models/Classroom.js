@@ -1,15 +1,16 @@
 import mongoose from 'mongoose';
-import crypto from 'node:crypto';
+import { randomClassCode, uniqueCode } from '../utils/codes.js';
 
 const COLORS = ['#6366f1', '#16a34a', '#d97706', '#db2777', '#0891b2', '#7c3aed', '#dc2626'];
 
 const classroomSchema = new mongoose.Schema(
   {
     title: { type: String, required: true, trim: true, maxlength: 120 },
-    subject: { type: String, required: true, trim: true },
+    subject: { type: String, trim: true, default: '' },
     description: { type: String, default: '', maxlength: 2000 },
     tutor: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     students: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+    // 5-digit join code the tutor shares with students.
     code: { type: String, unique: true },
     // The class's standing Google Meet link; used by sessions that don't set their own.
     meetUrl: { type: String, trim: true },
@@ -19,10 +20,9 @@ const classroomSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-classroomSchema.pre('validate', function assignDefaults(next) {
-  if (!this.code) this.code = crypto.randomBytes(3).toString('hex').toUpperCase();
+classroomSchema.pre('validate', async function assignDefaults() {
+  if (!this.code) this.code = await uniqueCode(randomClassCode, (code) => this.constructor.exists({ code }));
   if (!this.color) this.color = COLORS[Math.floor(Math.random() * COLORS.length)];
-  next();
 });
 
 /** True when the given user is the tutor or an enrolled student. */

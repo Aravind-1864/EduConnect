@@ -1,26 +1,21 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { CalendarCheck, Video } from 'lucide-react';
+import { CalendarCheck } from 'lucide-react';
 import { api, errorMessage } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import { useFetch } from '../hooks/useFetch';
-import { Avatar, Badge, Button, EmptyState, ErrorState, Modal, PageHeader, Spinner, cx } from '../components/ui';
-import MeetLinkFields, { MEET_URL_RE } from '../components/MeetLinkForm';
+import { Avatar, Badge, Button, EmptyState, ErrorState, PageHeader, Spinner, cx } from '../components/ui';
 import { fmtDateTime } from '../utils/format';
 
 const STATUS_COLOR = { pending: 'yellow', confirmed: 'green', declined: 'red', cancelled: 'gray', completed: 'blue' };
 
 export default function Bookings() {
   const { user } = useAuth();
-  const navigate = useNavigate();
   const isTutor = user.role === 'tutor';
   const { data: bookings, setData, loading, error, reload } = useFetch('/bookings');
   const [filter, setFilter] = useState('upcoming');
   const [busyId, setBusyId] = useState(null);
-
-  const [accepting, setAccepting] = useState(null);
-  const [meet, setMeet] = useState({ meetUrl: '', autoMeet: false });
 
   const update = async (b, status, extra = {}) => {
     setBusyId(b._id);
@@ -28,7 +23,6 @@ export default function Bookings() {
       const { data } = await api.patch(`/bookings/${b._id}`, { status, ...extra });
       setData((prev) => prev.map((x) => (x._id === data._id ? data : x)));
       toast.success(`Booking ${status}`);
-      setAccepting(null);
     } catch (err) {
       toast.error(errorMessage(err));
     } finally {
@@ -69,20 +63,12 @@ export default function Bookings() {
                   <p className="font-medium">{b.subject} · {other.name}</p>
                   <p className="text-sm text-slate-500">{fmtDateTime(b.startsAt)} · {b.durationMinutes} min</p>
                   {b.note && <p className="mt-1 text-sm italic text-slate-600">“{b.note}”</p>}
-                  {b.status === 'confirmed' && (
-                    <p className={cx('mt-1 text-xs font-medium', b.meetUrl ? 'text-emerald-600' : 'text-amber-600')}>
-                      {b.meetUrl ? 'Google Meet link ready' : isTutor ? 'Add a Google Meet link (Join → add link)' : 'Waiting for the tutor to add a Meet link'}
-                    </p>
-                  )}
                 </div>
                 <Badge color={STATUS_COLOR[b.status]}>{b.status}</Badge>
                 <div className="flex gap-2">
-                  {b.status === 'confirmed' && (
-                    <Button size="sm" variant="success" icon={Video} onClick={() => navigate(`/meet/${b._id}`)}>Join</Button>
-                  )}
                   {isTutor && b.status === 'pending' && (
                     <>
-                      <Button size="sm" loading={busy} onClick={() => { setMeet({ meetUrl: '', autoMeet: false }); setAccepting(b); }}>Accept</Button>
+                      <Button size="sm" loading={busy} onClick={() => update(b, 'confirmed')}>Accept</Button>
                       <Button size="sm" variant="secondary" disabled={busy} onClick={() => update(b, 'declined')}>Decline</Button>
                     </>
                   )}
@@ -101,32 +87,6 @@ export default function Bookings() {
         <EmptyState icon={CalendarCheck} title={`No ${filter} bookings`} text={isTutor ? 'Requests from students will appear here.' : 'Find a tutor and book your first session.'} />
       )}
 
-      <Modal
-        open={Boolean(accepting)}
-        onClose={() => setAccepting(null)}
-        title="Accept booking"
-        footer={
-          <>
-            <Button variant="secondary" onClick={() => setAccepting(null)}>Cancel</Button>
-            <Button
-              loading={busyId === accepting?._id}
-              onClick={() => {
-                if (meet.meetUrl && !MEET_URL_RE.test(meet.meetUrl.trim())) return toast.error('Please enter a valid Google Meet link');
-                update(accepting, 'confirmed', meet);
-              }}
-            >
-              Accept
-            </Button>
-          </>
-        }
-      >
-        {accepting && (
-          <p className="text-sm text-slate-600">
-            {accepting.subject} with {accepting.student.name} · {fmtDateTime(accepting.startsAt)}
-          </p>
-        )}
-        <MeetLinkFields value={meet} onChange={setMeet} />
-      </Modal>
     </>
   );
 }

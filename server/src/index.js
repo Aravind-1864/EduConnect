@@ -4,10 +4,12 @@ import { connectDB, disconnectDB } from './config/db.js';
 import { createApp } from './app.js';
 import { initSocket } from './socket.js';
 import { seedDemoData } from './utils/seed.js';
+import { runMigrations } from './utils/migrate.js';
 
 async function main() {
   const inMemory = await connectDB();
   if (inMemory) await seedDemoData();
+  await runMigrations();
 
   const app = createApp();
   const server = http.createServer(app);

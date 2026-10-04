@@ -13,7 +13,7 @@ const NAV = {
   student: [
     ['Learn', [
       { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-      { to: '/classes', label: 'My Classes', icon: BookOpen },
+      { to: '/classes', label: 'My Classrooms', icon: BookOpen },
       { to: '/calendar', label: 'Calendar', icon: CalendarDays },
       { to: '/grades', label: 'My Grades', icon: Award },
     ]],
@@ -28,7 +28,7 @@ const NAV = {
   tutor: [
     ['Teach', [
       { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-      { to: '/classes', label: 'My Classes', icon: BookOpen },
+      { to: '/classes', label: 'My Classrooms', icon: BookOpen },
       { to: '/calendar', label: 'Calendar', icon: CalendarDays },
     ]],
     ['Tutoring', [
@@ -42,7 +42,7 @@ const NAV = {
   admin: [
     ['Manage', [
       { to: '/admin', label: 'Admin Overview', icon: Shield },
-      { to: '/classes', label: 'All Classes', icon: BookOpen },
+      { to: '/classes', label: 'All Classrooms', icon: BookOpen },
       { to: '/tutors', label: 'Tutors', icon: Users },
     ]],
   ],
@@ -50,7 +50,7 @@ const NAV = {
 
 const PAGE_TITLES = {
   '/dashboard': 'Dashboard',
-  '/classes': 'Classes',
+  '/classes': 'Classrooms',
   '/calendar': 'Calendar',
   '/grades': 'My Grades',
   '/focus': 'Focus Timer',

@@ -1,82 +1,10 @@
-import { useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useState } from 'react';
 import toast from 'react-hot-toast';
-import { CheckCircle2, Video } from 'lucide-react';
 import { api, errorMessage } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import { Avatar, Button, Input, PageHeader, SectionCard, Textarea, cx } from '../components/ui';
-import { resetGoogleStatus } from '../components/MeetLinkForm';
 
 const COLORS = ['#4f46e5', '#16a34a', '#d97706', '#db2777', '#0891b2', '#7c3aed', '#dc2626', '#0f172a'];
-
-/** Tutors connect Google once so EduConnect can create Meet links for their classes. */
-function GoogleMeetCard() {
-  const [params, setParams] = useSearchParams();
-  const [status, setStatus] = useState(null);
-  const [busy, setBusy] = useState(false);
-
-  const load = () => api.get('/google/status').then(({ data }) => setStatus(data)).catch(() => setStatus({ configured: false }));
-
-  useEffect(() => {
-    const result = params.get('google');
-    if (result === 'connected') toast.success('Google account connected');
-    if (result === 'error') toast.error(params.get('message') || 'Could not connect Google');
-    if (result) setParams({}, { replace: true });
-    resetGoogleStatus();
-    load();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const connect = async () => {
-    setBusy(true);
-    try {
-      const { data } = await api.get('/google/auth-url');
-      window.location.href = data.url;
-    } catch (err) {
-      toast.error(errorMessage(err));
-      setBusy(false);
-    }
-  };
-
-  const disconnect = async () => {
-    if (!window.confirm('Disconnect your Google account? You can still paste Meet links by hand.')) return;
-    setBusy(true);
-    try {
-      await api.delete('/google');
-      resetGoogleStatus();
-      await load();
-      toast.success('Google disconnected');
-    } catch (err) {
-      toast.error(errorMessage(err));
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  if (!status) return null;
-  return (
-    <SectionCard title="Google Meet">
-      <div className="flex flex-wrap items-center gap-4">
-        <span className="rounded-xl bg-emerald-50 p-3 text-emerald-600"><Video className="size-6" /></span>
-        <div className="min-w-0 flex-1">
-          {!status.configured ? (
-            <p className="text-sm text-slate-600">Automatic Meet links are not set up on this server yet. You can still paste a Google Meet link when scheduling a class.</p>
-          ) : status.connected ? (
-            <p className="flex items-center gap-1.5 text-sm text-slate-700">
-              <CheckCircle2 className="size-4 text-emerald-600" /> Connected as <b>{status.email}</b>. Meet links can be created automatically.
-            </p>
-          ) : (
-            <p className="text-sm text-slate-600">Connect your Google account to create Google Meet links automatically for your classes and 1-on-1 sessions.</p>
-          )}
-        </div>
-        {status.configured && (status.connected ? (
-          <Button variant="secondary" loading={busy} onClick={disconnect}>Disconnect</Button>
-        ) : (
-          <Button loading={busy} onClick={connect}>Connect Google</Button>
-        ))}
-      </div>
-    </SectionCard>
-  );
-}
 
 export default function Profile() {
   const { user, setUser } = useAuth();
@@ -156,8 +84,6 @@ export default function Profile() {
               <Button type="submit" loading={busy === 'profile'}>Save changes</Button>
             </form>
           </SectionCard>
-
-          {user.role !== 'student' && <GoogleMeetCard />}
 
           <SectionCard title="Change password">
             <form onSubmit={changePassword} className="grid gap-4 sm:grid-cols-2">

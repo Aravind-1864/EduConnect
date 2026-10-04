@@ -6,7 +6,6 @@ import { api, errorMessage } from '../../api/client';
 import { useFetch } from '../../hooks/useFetch';
 import { useSocket } from '../../context/SocketContext';
 import { Button, ErrorState, Input, Modal, Spinner, Textarea, cx } from '../../components/ui';
-import MeetLinkFields, { MEET_URL_RE } from '../../components/MeetLinkForm';
 import StreamTab from './StreamTab';
 import MaterialsTab from './MaterialsTab';
 import AssignmentsTab from './AssignmentsTab';
@@ -15,26 +14,24 @@ import ChatTab from './ChatTab';
 import PeopleTab from './PeopleTab';
 
 const TABS = [
-  ['stream', 'Stream', Megaphone, StreamTab],
+  ['chat', 'Chat', MessagesSquare, ChatTab],
+  ['sessions', 'Class Meets', Video, SessionsTab],
+  ['stream', 'Announcements', Megaphone, StreamTab],
   ['materials', 'Materials', FolderOpen, MaterialsTab],
   ['assignments', 'Assignments', ClipboardList, AssignmentsTab],
-  ['sessions', 'Live Sessions', Video, SessionsTab],
-  ['chat', 'Chat', MessagesSquare, ChatTab],
   ['people', 'People', Users, PeopleTab],
 ];
 
 function SettingsModal({ classroom, open, onClose, onSaved }) {
   const navigate = useNavigate();
   const [form, setForm] = useState({ title: classroom.title, subject: classroom.subject, description: classroom.description });
-  const [meet, setMeet] = useState({ meetUrl: classroom.meetUrl ?? '', autoMeet: false });
   const [busy, setBusy] = useState(false);
 
   const save = async () => {
-    if (meet.meetUrl && !MEET_URL_RE.test(meet.meetUrl.trim())) return toast.error('Please enter a valid Google Meet link');
     setBusy(true);
     try {
-      await api.patch(`/classes/${classroom._id}`, { ...form, ...meet });
-      toast.success('Class updated');
+      await api.patch(`/classes/${classroom._id}`, form);
+      toast.success('Classroom updated');
       onSaved();
       onClose();
     } catch (err) {
@@ -48,7 +45,7 @@ function SettingsModal({ classroom, open, onClose, onSaved }) {
     if (!window.confirm(`Delete "${classroom.title}"? All materials, assignments and submissions will be permanently removed.`)) return;
     try {
       await api.delete(`/classes/${classroom._id}`);
-      toast.success('Class deleted');
+      toast.success('Classroom deleted');
       navigate('/classes');
     } catch (err) {
       toast.error(errorMessage(err));
@@ -59,19 +56,18 @@ function SettingsModal({ classroom, open, onClose, onSaved }) {
     <Modal
       open={open}
       onClose={onClose}
-      title="Class settings"
+      title="Classroom settings"
       footer={
         <>
-          <Button variant="danger" className="mr-auto" onClick={remove}>Delete class</Button>
+          <Button variant="danger" className="mr-auto" onClick={remove}>Delete classroom</Button>
           <Button variant="secondary" onClick={onClose}>Cancel</Button>
           <Button loading={busy} onClick={save}>Save</Button>
         </>
       }
     >
-      <Input label="Title" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
-      <Input label="Subject" value={form.subject} onChange={(e) => setForm({ ...form, subject: e.target.value })} />
+      <Input label="Classroom name" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
+      <Input label="Subject (optional)" value={form.subject} onChange={(e) => setForm({ ...form, subject: e.target.value })} />
       <Textarea label="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
-      <MeetLinkFields value={meet} onChange={setMeet} optional={false} hint="A new or changed link is posted in the class chat automatically." />
     </Modal>
   );
 }
@@ -82,7 +78,7 @@ export default function ClassDetail() {
   const socket = useSocket();
   const { data: classroom, loading, error, reload } = useFetch(`/classes/${classId}`);
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const tab = params.get('tab') ?? 'stream';
+  const tab = params.get('tab') ?? 'chat';
 
   useEffect(() => {
     if (!socket) return undefined;
@@ -93,52 +89,42 @@ export default function ClassDetail() {
   if (loading && !classroom) return <Spinner />;
   if (error) return <ErrorState message={error} onRetry={reload} />;
 
-  const Active = TABS.find(([key]) => key === tab)?.[3] ?? StreamTab;
+  const Active = TABS.find(([key]) => key === tab)?.[3] ?? ChatTab;
 
   const copyCode = () => {
     navigator.clipboard.writeText(classroom.code);
-    toast.success('Class code copied');
+    toast.success('Classroom code copied');
   };
 
   return (
     <>
       <Link to="/classes" className="mb-4 inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-800">
-        <ArrowLeft className="size-4" /> All classes
+        <ArrowLeft className="size-4" /> All classrooms
       </Link>
 
       <div className="relative overflow-hidden rounded-2xl p-6 text-white shadow-sm sm:p-8" style={{ background: classroom.color }}>
         <div className="absolute -right-10 -top-10 size-48 rounded-full bg-white/10" />
         <div className="relative flex flex-wrap items-end justify-between gap-4">
           <div>
-            <p className="text-sm font-medium text-white/80">{classroom.subject}</p>
+            {classroom.subject && <p className="text-sm font-medium text-white/80">{classroom.subject}</p>}
             <h1 className="mt-1 text-3xl font-bold text-white">{classroom.title}</h1>
             <p className="mt-2 text-white/85">
               {classroom.tutor.name} · {classroom.students.length} students
             </p>
           </div>
-          <div className="flex flex-wrap items-center gap-2">
-            {classroom.meetUrl ? (
-              <a href={classroom.meetUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-lg bg-white px-4 py-2 text-sm font-semibold text-slate-900 shadow-sm hover:bg-white/90">
-                <Video className="size-4 text-emerald-600" /> Join class meeting
-              </a>
-            ) : (
-              classroom.isTutor && (
-                <button onClick={() => setSettingsOpen(true)} className="inline-flex items-center gap-2 rounded-lg bg-white/20 px-4 py-2 text-sm font-semibold backdrop-blur hover:bg-white/30">
-                  <Video className="size-4" /> Add Google Meet link
-                </button>
-              )
-            )}
           {classroom.isTutor && (
             <div className="flex items-center gap-2">
-              <button onClick={copyCode} className="inline-flex items-center gap-2 rounded-lg bg-white/20 px-3 py-2 font-mono text-sm font-semibold tracking-widest backdrop-blur hover:bg-white/30">
-                {classroom.code} <Copy className="size-4" />
-              </button>
-              <button onClick={() => setSettingsOpen(true)} className="rounded-lg bg-white/20 p-2 backdrop-blur hover:bg-white/30" aria-label="Class settings">
+              <div className="rounded-xl bg-white/15 px-4 py-2 backdrop-blur">
+                <p className="text-xs font-medium uppercase tracking-wider text-white/75">Classroom code</p>
+                <button onClick={copyCode} className="flex items-center gap-2 font-mono text-3xl font-bold tracking-[0.3em] text-white" title="Copy code">
+                  {classroom.code} <Copy className="size-5 opacity-80" />
+                </button>
+              </div>
+              <button onClick={() => setSettingsOpen(true)} className="rounded-lg bg-white/20 p-2 backdrop-blur hover:bg-white/30" aria-label="Classroom settings">
                 <Settings className="size-5" />
               </button>
             </div>
           )}
-          </div>
         </div>
       </div>
 

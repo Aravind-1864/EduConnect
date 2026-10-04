@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { BookOpen, CalendarCheck, CalendarDays, ClipboardList, Flame, GraduationCap, Inbox, Timer, Trophy, Users, Video } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -6,13 +7,17 @@ import { Avatar, Badge, Button, EmptyState, ErrorState, SectionCard, Spinner, St
 import { ClassCard, SessionRow } from '../components/shared';
 import { fmtDateTime, fromNow, isOverdue } from '../utils/format';
 import { getStats, quoteOfTheDay } from '../utils/studyStats';
+import JoinMeetModal from '../components/JoinMeetModal';
 
 function Sessions({ sessions }) {
   const navigate = useNavigate();
   const { user } = useAuth();
-  if (!sessions.length) return <EmptyState icon={Video} title="No upcoming sessions" text="Scheduled live classes will show up here." />;
+  const [joining, setJoining] = useState(false);
+  if (!sessions.length) return <EmptyState icon={Video} title="No upcoming class meets" text="Class meets created in your classrooms will show up here." />;
+  const isTutor = user.role === 'tutor';
   return (
     <div className="space-y-3">
+      {joining && <JoinMeetModal open onClose={() => setJoining(false)} />}
       {sessions.map((s) => {
         const canJoin = s.status === 'live' || user.role === 'tutor';
         return (
@@ -21,8 +26,13 @@ function Sessions({ sessions }) {
             session={s}
             classroom={s.classroom}
             action={
-              <Button size="sm" variant={s.status === 'live' ? 'success' : 'secondary'} disabled={!canJoin} onClick={() => navigate(`/live/${s.classroom._id}/${s._id}`)}>
-                {user.role === 'tutor' && s.status === 'scheduled' ? 'Start' : 'Join'}
+              <Button
+                size="sm"
+                variant={s.status === 'live' ? 'success' : 'secondary'}
+                disabled={!canJoin}
+                onClick={() => (isTutor ? navigate(`/live/${s.classroom._id}/${s._id}`) : setJoining(true))}
+              >
+                {isTutor ? (s.status === 'scheduled' ? 'Start' : 'Open') : 'Join with code'}
               </Button>
             }
           />
@@ -65,7 +75,7 @@ function StudentDashboard({ data }) {
       </div>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-3">
-        <SectionCard title="Upcoming live sessions" className="lg:col-span-2">
+        <SectionCard title="Upcoming class meets" className="lg:col-span-2">
           <Sessions sessions={data.upcomingSessions} />
         </SectionCard>
         <SectionCard title="Assignments due">
@@ -123,7 +133,7 @@ function TutorDashboard({ data }) {
         <StatCard label="Booking requests" value={stats.pendingBookings} icon={CalendarCheck} tone="pink" />
       </div>
       <div className="mt-6 grid gap-6 lg:grid-cols-3">
-        <SectionCard title="Upcoming live sessions" className="lg:col-span-2">
+        <SectionCard title="Upcoming class meets" className="lg:col-span-2">
           <Sessions sessions={data.upcomingSessions} />
         </SectionCard>
         <SectionCard title="Needs grading">

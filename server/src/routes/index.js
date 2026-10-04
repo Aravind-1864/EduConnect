@@ -31,6 +31,7 @@ router.get('/grades', allow('student'), dash.myGrades);
 router.get('/classes', cls.listMyClasses);
 router.post('/classes', allow('tutor', 'admin'), cls.createClass);
 router.post('/classes/join', allow('student'), cls.joinClass);
+router.post('/meets/join', content.joinMeetByCode);
 
 const c = Router({ mergeParams: true });
 router.use('/classes/:classId', loadClassroom(), c);

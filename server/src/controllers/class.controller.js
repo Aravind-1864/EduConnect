@@ -2,6 +2,7 @@ import { Classroom, Announcement, Assignment, Material, Session, Submission, Mes
 import { ApiError, asyncHandler, requireFields } from '../utils/ApiError.js';
 import { resolveMeetUrl } from '../utils/googleMeet.js';
 import { meetLinkMessage, postClassMessage } from '../utils/chat.js';
+import { CLASS_CODE_RE, cleanClassCode } from '../utils/codes.js';
 
 const PEOPLE = 'name email role avatarColor';
 
@@ -14,7 +15,7 @@ export const listMyClasses = asyncHandler(async (req, res) => {
 });
 
 export const createClass = asyncHandler(async (req, res) => {
-  requireFields(req.body, ['title', 'subject']);
+  requireFields(req.body, ['title']);
   const { title, subject, description } = req.body;
   const { meetUrl } = await resolveMeetUrl(req.body, req.user._id);
   const classroom = await Classroom.create({ title, subject, description, meetUrl: meetUrl || undefined, tutor: req.user._id });
@@ -23,9 +24,10 @@ export const createClass = asyncHandler(async (req, res) => {
 });
 
 export const joinClass = asyncHandler(async (req, res) => {
-  requireFields(req.body, ['code']);
-  const classroom = await Classroom.findOne({ code: req.body.code.trim().toUpperCase(), archived: false });
-  if (!classroom) throw ApiError.notFound('No class found with that code');
+  const code = cleanClassCode(req.body.code);
+  if (!CLASS_CODE_RE.test(code)) throw ApiError.badRequest('Enter the 5-digit classroom code');
+  const classroom = await Classroom.findOne({ code, archived: false });
+  if (!classroom) throw ApiError.notFound('No classroom found with that code');
   if (classroom.hasMember(req.user._id)) throw ApiError.conflict('You are already in this class');
   classroom.students.push(req.user._id);
   await classroom.save();
